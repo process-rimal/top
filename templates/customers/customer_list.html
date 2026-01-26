@@ -4,7 +4,40 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Customers</h2>
-    <div class="alert alert-info">Manage customers here. Add customers via Admin panel.</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Customers</h2>
+        <a href="/customers/add/" class="btn btn-primary">Add Customer</a>
+    </div>
+
+    {% if customers %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>City</th>
+                    <th>Credit Limit</th>
+                    <th>Current Credit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.customer_name }}</td>
+                    <td>{{ customer.phone_number }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.city }}</td>
+                    <td>Rs. {{ customer.total_credit_limit }}</td>
+                    <td>Rs. {{ customer.current_credit }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No customers found. <a href="/customers/add/">Add one now</a>.</div>
+    {% endif %}
 </div>
 {% endblock %}

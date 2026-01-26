@@ -1,85 +1,58 @@
-
-# Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Vendor, VendorContact
+from .models import Vendor, PurchaseOrder, PurchaseOrderItem
 
 @login_required
 def vendor_list(request):
     vendors = Vendor.objects.all()
-    context = {'vendors': vendors}
-    return render(request, 'vendors/vendor_list.html', context)
-
-@login_required
-def vendor_detail(request, vendor_id):
-    vendor = get_object_or_404(Vendor, id=vendor_id)
-    contacts = VendorContact.objects.filter(vendor=vendor)
-    context = {
-        'vendor': vendor,
-        'contacts': contacts
-    }
-    return render(request, 'vendors/vendor_detail.html', context)
+    return render(request, 'vendors/vendor_list.html', {'vendors': vendors})
 
 @login_required
 def vendor_add(request):
     if request.method == 'POST':
-        vendor_name = request.POST.get('vendor_name')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')
-        address = request.POST.get('address')
-        city = request.POST.get('city')
-        
-        vendor = Vendor.objects.create(
-            vendor_name=vendor_name,
-            email=email,
-            phone=phone,
-            address=address,
-            city=city
+        Vendor.objects.create(
+            vendor_id=request.POST.get('vendor_id'),
+            name=request.POST.get('name'),
+            phone=request.POST.get('phone'),
+            address=request.POST.get('address'),
+            city=request.POST.get('city')
         )
-        return redirect('vendor_detail', vendor_id=vendor.id)
-    
+        return redirect('vendor_list')
     return render(request, 'vendors/vendor_add.html')
 
 @login_required
-def vendor_edit(request, vendor_id):
-    vendor = get_object_or_404(Vendor, id=vendor_id)
+def vendor_edit(request, pk):
+    vendor = get_object_or_404(Vendor, pk=pk)
     if request.method == 'POST':
-        vendor.vendor_name = request.POST.get('vendor_name')
-        vendor.email = request.POST.get('email')
+        vendor.name = request.POST.get('name')
         vendor.phone = request.POST.get('phone')
-        vendor.address = request.POST.get('address')
-        vendor.city = request.POST.get('city')
         vendor.save()
-        return redirect('vendor_detail', vendor_id=vendor.id)
-    
-    context = {'vendor': vendor}
-    return render(request, 'vendors/vendor_edit.html', context)
+        return redirect('vendor_list')
+    return render(request, 'vendors/vendor_edit.html', {'vendor': vendor})
 
 @login_required
-def vendor_delete(request, vendor_id):
-    vendor = get_object_or_404(Vendor, id=vendor_id)
+def vendor_delete(request, pk):
+    vendor = get_object_or_404(Vendor, pk=pk)
     if request.method == 'POST':
         vendor.delete()
         return redirect('vendor_list')
-    
-    context = {'vendor': vendor}
-    return render(request, 'vendors/vendor_delete.html', context)
+    return render(request, 'vendors/vendor_delete.html', {'vendor': vendor})
 
 @login_required
-def add_vendor_contact(request, vendor_id):
-    vendor = get_object_or_404(Vendor, id=vendor_id)
-    if request.method == 'POST':
-        contact_name = request.POST.get('contact_name')
-        contact_phone = request.POST.get('contact_phone')
-        contact_email = request.POST.get('contact_email')
-        
-        VendorContact.objects.create(
-            vendor=vendor,
-            contact_name=contact_name,
-            contact_phone=contact_phone,
-            contact_email=contact_email
-        )
-        return redirect('vendor_detail', vendor_id=vendor.id)
-    
-    context = {'vendor': vendor}
-    return render(request, 'vendors/add_contact.html', context)
+def purchase_order_list(request):
+    pos = PurchaseOrder.objects.all()
+    return render(request, 'vendors/purchase_order_list.html', {'purchase_orders': pos})
+
+@login_required
+def purchase_order_add(request):
+    return render(request, 'vendors/purchase_order_add.html')
+
+@login_required
+def purchase_order_detail(request, pk):
+    po = get_object_or_404(PurchaseOrder, pk=pk)
+    return render(request, 'vendors/purchase_order_detail.html', {'po': po})
+
+@login_required
+def purchase_order_receive(request, pk):
+    po = get_object_or_404(PurchaseOrder, pk=pk)
+    return render(request, 'vendors/purchase_order_receive.html', {'po': po})

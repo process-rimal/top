@@ -2,12 +2,13 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.dashboard_report, name='dashboard'),
+    path('', views.reports_dashboard, name='reports_dashboard'),
     path('sales/', views.sales_report, name='sales_report'),
     path('inventory/', views.inventory_report, name='inventory_report'),
-    path('profit-loss/', views.profit_loss_report, name='profit_loss_report'),
-    path('top-products/', views.top_products_report, name='top_products_report'),
-    path('customer-purchases/', views.customer_purchase_report, name='customer_purchase_report'),
-    path('daily-trend/', views.daily_sales_trend, name='daily_sales_trend'),
-    path('dashboard/', views.dashboard_report, name='dashboard_report'),
+    path('customers/', views.customer_report, name='customer_report'),
+    path('vendors/', views.vendor_report, name='vendor_report'),
+    
+    # Export
+    path('sales/export/', views.export_sales, name='export_sales'),
+    path('inventory/export/', views.export_inventory, name='export_inventory'),
 ]

@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block nav-global %}
+<nav class="navbar" style="margin: 0 0 16px 0; display: flex; gap: 12px; align-items: center;">
+    <a href="/inventory/" class="button" style="padding: 6px 10px;">Inventory</a>
+    <a href="/sales/" class="button" style="padding: 6px 10px;">Sales</a>
+    <a href="/reports/" class="button" style="padding: 6px 10px;">Reports</a>
+    <a href="/customers/" class="button" style="padding: 6px 10px;">Customers</a>
+    <a href="/accounts/logout/" class="button" style="padding: 6px 10px;">Logout</a>
+</nav>
+{% endblock %}

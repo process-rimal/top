@@ -1,40 +1,11 @@
-import json
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.http import JsonResponse
-from .models import Sale, SaleItem
-from inventory.models import Product
-from customers.models import Customer
+{% extends "base.html" %}
 
-def pos_system(request):
-    if request.method == 'POST':
-        # Process checkout
-        cart = json.loads(request.POST['cart'])
-        customer_id = request.POST.get('customer_id')
-        
-        sale = Sale.objects.create(
-            customer_id=customer_id,
-            total_amount=sum(item['price'] * item['qty'] for item in cart),
-            payment_status='Paid'
-        )
-        
-        for item in cart:
-            product = Product.objects.get(id=item['id'])
-            SaleItem.objects.create(
-                sale=sale,
-                product=product,
-                quantity=item['qty'],
-                unit_price=item['price'],
-                total_price=item['price'] * item['qty']
-            )
-            # Update stock
-            product.selling_price -= item['price'] * item['qty']  # Simple stock
-        
-        messages.success(request, f"Sale #{sale.id} created! Total: Rs. {sale.total_amount}")
-        return redirect('dashboard')
-    
-    context = {
-        'products': Product.objects.all(),
-        'customers': Customer.objects.all()
-    }
-    return render(request, 'sales/pos.html', context)
+{% block title %}POS - Point of Sale{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>🛒 Point of Sale</h2>
+    <p>This page is deprecated. Please use the main POS page.</p>
+    <a href="/sales/pos/" class="btn btn-primary">Go to POS</a>
+</div>
+{% endblock %}

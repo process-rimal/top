@@ -7,7 +7,7 @@
             <h1>📦 Products</h1>
         </div>
         <div class="col-md-4 text-end">
-            <a href="/admin/" class="btn btn-primary">Add Product</a>
+            <a href="/inventory/products/add/" class="btn btn-primary">Add Product</a>
         </div>
     </div>
 
@@ -28,13 +28,13 @@
                 {% for product in products %}
                 <tr>
                     <td>{{ product.sku }}</td>
-                    <td>{{ product.name }}</td>
-                    <td>{{ product.category }}</td>
-                    <td>Rs. {{ product.price }}</td>
-                    <td><span class="badge bg-info">{{ product.stock }}</span></td>
+                    <td>{{ product.product_name }}</td>
+                    <td>{{ product.category.name }}</td>
+                    <td>Rs. {{ product.selling_price }}</td>
+                    <td><span class="badge bg-info">{{ product.inventory.quantity_in_stock }}</span></td>
                     <td>
-                        <a href="/admin/" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="/admin/" class="btn btn-sm btn-danger">Delete</a>
+                        <a href="/inventory/products/{{ product.id }}/edit/" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="/inventory/products/{{ product.id }}/delete/" class="btn btn-sm btn-danger">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -42,7 +42,7 @@
         </table>
     </div>
     {% else %}
-    <div class="alert alert-info">No products found. <a href="/admin/">Add one now</a></div>
+    <div class="alert alert-info">No products found. <a href="/inventory/products/add/">Add one now</a></div>
     {% endif %}
 </div>
 {% endblock %}
