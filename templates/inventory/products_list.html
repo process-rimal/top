@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Products - Shop Management{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>📦 Products</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/admin/" class="btn btn-primary">Add Product</a>
+        </div>
+    </div>
+
+    {% if products %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.sku }}</td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category }}</td>
+                    <td>Rs. {{ product.price }}</td>
+                    <td><span class="badge bg-info">{{ product.stock }}</span></td>
+                    <td>
+                        <a href="/admin/" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="/admin/" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No products found. <a href="/admin/">Add one now</a></div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <h2 class="mb-4">Dashboard</h2>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h6 class="card-title">Total Products</h6>
+                    <h2>{{ total_products }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">Today's Sales</h6>
+                    <h2>Rs.{{ today_sales }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h6 class="card-title">Total Customers</h6>
+                    <h2>{{ total_customers }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h6 class="card-title">Low Stock Items</h6>
+                    <h2>{{ low_stock_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Access</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'admin:inventory_product_changelist' %}" class="btn btn-outline-primary">Manage Products</a>
+                    <a href="{% url 'pos_system' %}" class="btn btn-outline-success">New Sale</a>
+                    <a href="{% url 'admin:customers_customer_changelist' %}" class="btn btn-outline-info">Customers</a>
+                    <a href="{% url 'admin:vendors_vendor_changelist' %}" class="btn btn-outline-warning">Vendors</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
