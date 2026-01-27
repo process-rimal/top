@@ -70,5 +70,37 @@
     {% else %}
     <div class="alert alert-info">No customers found. <a href="/customers/add/">Add one now</a>.</div>
     {% endif %}
+
+    {% if irregular_customers %}
+    <div class="mt-5">
+        <h4 class="mb-3">IR Customers</h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in irregular_customers %}
+                    <tr>
+                        <td>
+                            <a href="/customers/ir/{{ customer.id }}/" class="text-decoration-none">
+                                IR: {{ customer.customer_name }}
+                            </a>
+                        </td>
+                        <td>{{ customer.phone_number|default:"—" }}</td>
+                        <td>{{ customer.address|default:"—" }}</td>
+                        <td>{{ customer.created_date|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

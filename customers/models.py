@@ -48,6 +48,22 @@ class Customer(models.Model):
 
 
 
+class IrregularCustomer(models.Model):
+    """Irregular customer (not stored in regular customer list)."""
+
+    customer_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15, blank=True)
+    address = models.TextField(blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'irregular_customers'
+        ordering = ['-created_date']
+
+    def __str__(self):
+        return self.customer_name
+
+
 class CreditTransaction(models.Model):
     """Credit Transaction History"""
     

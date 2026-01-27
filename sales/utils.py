@@ -89,7 +89,12 @@ def generate_receipt_pdf(sale):
         f"<b>Receipt No:</b> {receipt_no}",
         f"<b>Purchased Date:</b> {sale.sale_date.strftime('%Y-%m-%d %H:%M')}",
     ]
-    if sale.customer:
+    if sale.irregular_customer:
+        customer_name = f"IR: {sale.irregular_customer.customer_name}"
+        customer_address = sale.irregular_customer.address or ''
+        sale_info_lines.append(f"<b>Customer:</b> {customer_name}")
+        sale_info_lines.append(f"<b>Address:</b> {customer_address}" if customer_address else "<b>Address:</b> —")
+    elif sale.customer:
         customer_name = sale.customer.customer_name
         customer_address = sale.customer.address or ''
         sale_info_lines.append(f"<b>Customer:</b> {customer_name}")

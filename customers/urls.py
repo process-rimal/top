@@ -5,6 +5,7 @@ urlpatterns = [
     # Customer URLs
     path('', views.customer_list, name='customer_list'),
     path('add/', views.customer_add, name='customer_add'),
+    path('ir/<int:pk>/', views.irregular_customer_detail, name='irregular_customer_detail'),
     path('<str:phone>/', views.customer_detail, name='customer_detail'),
     path('<str:phone>/edit/', views.customer_edit, name='customer_edit'),
     path('<str:phone>/delete/', views.customer_delete, name='customer_delete'),

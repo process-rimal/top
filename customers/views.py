@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Customer, CreditTransaction
+from .models import Customer, CreditTransaction, IrregularCustomer
+from sales.models import Sale
 
 @login_required
 def customer_list(request):
     customers = Customer.objects.all()
+    irregular_customers = IrregularCustomer.objects.all()
     query = request.GET.get('q', '').strip()
     filter_by = request.GET.get('filter_by', 'name')
     if query:
@@ -15,12 +17,16 @@ def customer_list(request):
                 Q(phone_number__icontains=query) |
                 Q(secondary_phone_number__icontains=query)
             )
+            irregular_customers = irregular_customers.filter(phone_number__icontains=query)
         elif filter_by == 'address':
             customers = customers.filter(Q(address__icontains=query) | Q(city__icontains=query))
+            irregular_customers = irregular_customers.filter(address__icontains=query)
         else:
             customers = customers.filter(customer_name__icontains=query)
+            irregular_customers = irregular_customers.filter(customer_name__icontains=query)
     return render(request, 'customers/customer_list.html', {
         'customers': customers,
+        'irregular_customers': irregular_customers,
         'query': query,
         'filter_by': filter_by,
     })
@@ -48,6 +54,16 @@ def customer_detail(request, phone):
     return render(request, 'customers/customer_detail.html', {
         'customer': customer,
         'credit_transactions': credit_transactions,
+        'sales': sales,
+    })
+
+
+@login_required
+def irregular_customer_detail(request, pk):
+    irregular_customer = get_object_or_404(IrregularCustomer, id=pk)
+    sales = Sale.objects.filter(irregular_customer=irregular_customer).order_by('-sale_date')
+    return render(request, 'customers/ir_customer_detail.html', {
+        'irregular_customer': irregular_customer,
         'sales': sales,
     })
 

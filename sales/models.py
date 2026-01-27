@@ -1,14 +1,14 @@
 from django.db import models
 from django.utils import timezone
 from inventory.models import Product
-from customers.models import Customer
+from customers.models import Customer, IrregularCustomer
 
 class Sale(models.Model):
     """Sales/Billing Records"""
     
     PAYMENT_METHOD = [
         ('cash', 'Cash'),
-        ('card', 'Card'),
+        ('card', 'QR'),
         ('credit', 'Credit'),
         ('cheque', 'Cheque'),
         ('momo', 'Mobile Money'),
@@ -23,6 +23,7 @@ class Sale(models.Model):
     sale_number = models.CharField(max_length=50, unique=True)
     receipt_number = models.CharField(max_length=50, unique=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='sales')
+    irregular_customer = models.ForeignKey(IrregularCustomer, on_delete=models.SET_NULL, null=True, blank=True, related_name='sales')
     
     cashier = models.ForeignKey('accounts.UserProfile', on_delete=models.SET_NULL, null=True)
     sale_date = models.DateTimeField(auto_now_add=True)

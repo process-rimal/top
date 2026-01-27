@@ -67,7 +67,13 @@
                 <tr>
                     <td>{{ sale.sale_number }}</td>
                     <td>{{ sale.sale_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ sale.customer.customer_name|default:"Walk-in" }}</td>
+                    <td>
+                        {% if sale.irregular_customer %}
+                            IR: {{ sale.irregular_customer.customer_name }}
+                        {% else %}
+                            {{ sale.customer.customer_name|default:"Walk-in" }}
+                        {% endif %}
+                    </td>
                     <td>Rs. {{ sale.total_amount }}</td>
                     <td>{{ sale.payment_method }}</td>
                     <td>{{ sale.payment_status }}</td>

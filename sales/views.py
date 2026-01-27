@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db.models import Q
 from .models import Sale, SaleItem
 from inventory.models import Product, Inventory
-from customers.models import Customer
+from customers.models import Customer, IrregularCustomer
 from .utils import generate_receipt_pdf, number_to_words
 from decimal import Decimal
 import json
@@ -77,7 +77,15 @@ def create_sale_api(request):
         data = json.loads(request.body)
         
         customer = None
-        if data.get('customer_phone'):
+        irregular_customer = None
+        customer_type = data.get('customer_type', 'regular')
+        if customer_type == 'irregular':
+            irregular_customer = IrregularCustomer.objects.create(
+                customer_name=data.get('ir_customer_name') or 'IR Customer',
+                phone_number=data.get('ir_customer_phone', ''),
+                address=data.get('ir_customer_address', ''),
+            )
+        elif data.get('customer_phone'):
             customer, _ = Customer.objects.get_or_create(
                 phone_number=data['customer_phone'],
                 defaults={'customer_name': data.get('customer_name', 'Walk-in Customer')}
@@ -89,6 +97,7 @@ def create_sale_api(request):
 
         sale = Sale.objects.create(
             customer=customer,
+            irregular_customer=irregular_customer,
             cashier=request.user.profile,
             subtotal=Decimal(str(data['subtotal'])),
             discount=Decimal(str(data.get('discount', 0))),
@@ -176,16 +185,22 @@ def sales_list(request):
 
     if query:
         if filter_by == 'phone':
-            sales = sales.filter(customer__phone_number__icontains=query)
+            sales = sales.filter(
+                Q(customer__phone_number__icontains=query) |
+                Q(irregular_customer__phone_number__icontains=query)
+            )
         elif filter_by == 'sale_number':
             sales = sales.filter(sale_number__icontains=query)
         else:
-            sales = sales.filter(customer__customer_name__icontains=query)
+            sales = sales.filter(
+                Q(customer__customer_name__icontains=query) |
+                Q(irregular_customer__customer_name__icontains=query)
+            )
 
     if sort_by == 'customer':
-        sales = sales.order_by('customer__customer_name', '-sale_date')
+        sales = sales.order_by('customer__customer_name', 'irregular_customer__customer_name', '-sale_date')
     elif sort_by == 'phone':
-        sales = sales.order_by('customer__phone_number', '-sale_date')
+        sales = sales.order_by('customer__phone_number', 'irregular_customer__phone_number', '-sale_date')
     else:
         sales = sales.order_by('-sale_date')
     
