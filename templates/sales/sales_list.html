@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Sales List{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Sales Transactions</h2>
+        <a href="/sales/pos/" class="btn btn-primary">New Sale</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="from_date" class="form-control" value="{{ from_date }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="to_date" class="form-control" value="{{ to_date }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-outline-primary">Filter</button>
+                    <a href="/sales/history/" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if sales %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Sale #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.sale_number }}</td>
+                    <td>{{ sale.sale_date|date:"M d, Y H:i" }}</td>
+                    <td>{{ sale.customer.customer_name|default:"Walk-in" }}</td>
+                    <td>Rs. {{ sale.total_amount }}</td>
+                    <td>{{ sale.payment_method }}</td>
+                    <td>{{ sale.payment_status }}</td>
+                    <td>
+                        <a href="/sales/{{ sale.sale_number }}/" class="btn btn-sm btn-info">View</a>
+                        <a href="/sales/receipt/{{ sale.sale_number }}/" class="btn btn-sm btn-success">Receipt</a>
+                        <a href="/sales/edit/{{ sale.sale_number }}/" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="/sales/delete/{{ sale.sale_number }}/" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No sales found.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -17,6 +17,7 @@
                     <th>Name</th>
                     <th>Type</th>
                     <th>Active</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,6 +26,10 @@
                     <td>{{ category.name }}</td>
                     <td>{{ category.category_type }}</td>
                     <td>{{ category.is_active }}</td>
+                    <td>
+                        <a href="/inventory/categories/{{ category.id }}/edit/" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="/inventory/categories/{{ category.id }}/delete/" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Product{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4">
+        <h4 class="mb-3">Delete Product</h4>
+        <p>Are you sure you want to delete <strong>{{ product.product_name }}</strong>?</p>
+        {% if messages %}
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Admin Password</label>
+                <input type="password" name="admin_password" class="form-control" required>
+            </div>
+            <a href="/inventory/products/" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

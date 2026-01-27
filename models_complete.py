@@ -258,14 +258,19 @@ class Customer(models.Model):
         validators=[phone_regex],
         db_index=True
     )
+    secondary_phone_number = models.CharField(
+        max_length=15,
+        blank=True,
+        validators=[phone_regex]
+    )
     
     customer_name = models.CharField(max_length=100)
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
     city = models.CharField(max_length=50, blank=True)
+    notes = models.TextField(blank=True)
     
     # Credit Management
-    total_credit_limit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     current_credit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     loyalty_points = models.IntegerField(default=0)
     
@@ -282,20 +287,7 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.customer_name} ({self.phone_number})"
     
-    @property
-    def available_credit(self):
-        """Available credit = Total limit - Current debt"""
-        return self.total_credit_limit - self.current_credit
     
-    @property
-    def credit_status(self):
-        """Check credit status"""
-        if self.current_credit >= self.total_credit_limit:
-            return 'exceeded'
-        elif self.current_credit > (self.total_credit_limit * 0.8):
-            return 'warning'
-        else:
-            return 'good'
 
 
 class CreditTransaction(models.Model):

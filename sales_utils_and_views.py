@@ -215,14 +215,14 @@ def get_customer_api(request):
     phone = request.GET.get('phone', '')
     
     try:
-        customer = Customer.objects.get(phone_number=phone)
+        customer = Customer.objects.get(
+            models.Q(phone_number=phone) | models.Q(secondary_phone_number=phone)
+        )
         return JsonResponse({
             'found': True,
             'name': customer.customer_name,
             'phone': customer.phone_number,
-            'credit_limit': str(customer.total_credit_limit),
             'current_credit': str(customer.current_credit),
-            'available_credit': str(customer.available_credit),
         })
     except Customer.DoesNotExist:
         return JsonResponse({'found': False})

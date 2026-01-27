@@ -28,6 +28,9 @@
                     <datalist id="customer-phones">
                         {% for customer in customers %}
                         <option value="{{ customer.phone_number }}"></option>
+                        {% if customer.secondary_phone_number %}
+                        <option value="{{ customer.secondary_phone_number }}"></option>
+                        {% endif %}
                         {% endfor %}
                     </datalist>
                 </div>
@@ -113,6 +116,7 @@ const customers = [
         id: {{ customer.id }},
         name: "{{ customer.customer_name|escapejs }}",
         phone: "{{ customer.phone_number|escapejs }}",
+        secondary_phone: "{{ customer.secondary_phone_number|default:''|escapejs }}",
         credit: "{{ customer.current_credit }}"
     },
     {% endfor %}
@@ -152,7 +156,9 @@ nameInput.addEventListener('input', () => {
 });
 
 phoneInput.addEventListener('input', () => {
-    const customer = customers.find(c => c.phone === phoneInput.value);
+    const customer = customers.find(
+        c => c.phone === phoneInput.value || c.secondary_phone === phoneInput.value
+    );
     if (customer) {
         nameInput.value = customer.name;
         setCustomerDetails(customer);

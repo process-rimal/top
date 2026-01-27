@@ -12,6 +12,8 @@ urlpatterns = [
     # Category URLs
     path('categories/', views.category_list, name='category_list'),
     path('categories/add/', views.category_add, name='category_add'),
+    path('categories/<int:category_id>/edit/', views.category_edit, name='category_edit'),
+    path('categories/<int:category_id>/delete/', views.category_delete, name='category_delete'),
     
     # Inventory URLs
     path('inventory/', views.inventory_list, name='inventory_list'),

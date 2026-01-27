@@ -3,7 +3,7 @@ from .models import Customer, CreditTransaction
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'phone_number', 'email', 'total_credit_limit', 'current_credit', 'credit_status')
+    list_display = ('customer_name', 'phone_number', 'secondary_phone_number', 'email', 'current_credit')
     list_filter = ('registration_date',)
     search_fields = ('customer_name', 'phone_number', 'email')
     ordering = ('customer_name',)
