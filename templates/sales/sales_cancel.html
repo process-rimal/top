@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Cancel Sale{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-body">
+            <h4>Cancel Sale {{ sale.sale_number }}</h4>
+            <p>Are you sure you want to cancel this sale?</p>
+            <form method="post">
+                {% csrf_token %}
+                <button class="btn btn-warning" type="submit">Confirm Cancel</button>
+                <a href="/sales/{{ sale.sale_number }}/" class="btn btn-outline-secondary">Back</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -12,6 +12,9 @@
         <div class="d-flex gap-2">
             <a href="/sales/receipt/{{ sale.sale_number }}/pdf/" class="btn btn-outline-primary">View PDF</a>
             <a href="/sales/receipt/{{ sale.sale_number }}/pdf/?download=1" class="btn btn-outline-secondary">Download PDF</a>
+            {% if sale.customer and sale.customer.email %}
+            <a href="/sales/email/{{ sale.sale_number }}/" class="btn btn-outline-info">Email Receipt</a>
+            {% endif %}
         </div>
     </div>
 

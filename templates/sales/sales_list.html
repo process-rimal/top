@@ -59,6 +59,7 @@
                     <th>Total</th>
                     <th>Payment</th>
                     <th>Status</th>
+                    <th>Order</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -77,6 +78,7 @@
                     <td>Rs. {{ sale.total_amount }}</td>
                     <td>{{ sale.payment_method }}</td>
                     <td>{{ sale.payment_status }}</td>
+                    <td>{{ sale.order_status }}</td>
                     <td>
                         <a href="/sales/{{ sale.sale_number }}/" class="btn btn-sm btn-info">View</a>
                         <a href="/sales/receipt/{{ sale.sale_number }}/" class="btn btn-sm btn-success">Receipt</a>

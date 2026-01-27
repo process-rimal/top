@@ -19,6 +19,12 @@ class Sale(models.Model):
         ('pending', 'Pending'),
         ('partial', 'Partially Paid'),
     ]
+
+    ORDER_STATUS = [
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('returned', 'Returned'),
+    ]
     
     sale_number = models.CharField(max_length=50, unique=True)
     receipt_number = models.CharField(max_length=50, unique=True, blank=True)
@@ -39,6 +45,7 @@ class Sale(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD, default='cash')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='paid')
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    order_status = models.CharField(max_length=20, choices=ORDER_STATUS, default='completed')
     
     notes = models.TextField(blank=True)
     is_printed = models.BooleanField(default=False)

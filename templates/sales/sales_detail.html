@@ -12,7 +12,14 @@
         <div class="d-flex gap-2">
             <a href="/sales/receipt/{{ sale.sale_number }}/" class="btn btn-outline-primary">View Receipt</a>
             <a href="/sales/receipt/{{ sale.sale_number }}/pdf/" class="btn btn-outline-secondary">View PDF</a>
+            {% if sale.customer and sale.customer.email %}
+            <a href="/sales/email/{{ sale.sale_number }}/" class="btn btn-outline-info">Email Receipt</a>
+            {% endif %}
             <a href="/sales/history/" class="btn btn-outline-secondary">Back to History</a>
+            {% if sale.order_status == 'completed' %}
+            <a href="/sales/return/{{ sale.sale_number }}/" class="btn btn-outline-danger">Return</a>
+            <a href="/sales/cancel/{{ sale.sale_number }}/" class="btn btn-outline-warning">Cancel</a>
+            {% endif %}
         </div>
     </div>
 
@@ -24,6 +31,7 @@
                     <div><strong>Purchased Date:</strong> {{ sale.sale_date|date:"Y-m-d H:i" }}</div>
                     <div><strong>Payment:</strong> {{ sale.get_payment_method_display }}</div>
                     <div><strong>Status:</strong> {{ sale.payment_status }}</div>
+                    <div><strong>Order Status:</strong> {{ sale.order_status }}</div>
                 </div>
                 <div class="col-md-8">
                     {% if sale.irregular_customer %}

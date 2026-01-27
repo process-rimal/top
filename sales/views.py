@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
+from django.core.mail import EmailMessage
 from django.views.decorators.http import require_http_methods
 from django.db import transaction
 from django.utils import timezone
@@ -225,6 +226,118 @@ def credit_records(request):
 def sales_detail(request, sale_number):
     sale = get_object_or_404(Sale, sale_number=sale_number)
     return render(request, 'sales/sales_detail.html', {'sale': sale})
+
+
+@login_required
+@transaction.atomic
+def sales_return(request, sale_number):
+    sale = get_object_or_404(Sale, sale_number=sale_number)
+    if request.method == 'POST' and sale.order_status != 'returned':
+        for item in sale.items.all():
+            inventory, _ = Inventory.objects.get_or_create(
+                product=item.product,
+                defaults={'quantity_in_stock': 0}
+            )
+            inventory.quantity_in_stock += item.quantity
+            inventory.save()
+
+        if sale.customer:
+            from customers.models import CreditTransaction
+            credit_change = 0
+            if sale.payment_method == 'credit':
+                credit_change = sale.total_amount
+            elif sale.payment_status == 'partial':
+                credit_change = sale.total_amount - sale.paid_amount
+            if credit_change > 0:
+                sale.customer.current_credit = max(sale.customer.current_credit - credit_change, 0)
+                sale.customer.save()
+                CreditTransaction.objects.create(
+                    customer=sale.customer,
+                    transaction_type='refund',
+                    amount=credit_change,
+                    balance_after=sale.customer.current_credit,
+                    related_sale=sale,
+                )
+
+        sale.order_status = 'returned'
+        sale.save(update_fields=['order_status'])
+        messages.success(request, 'Sale marked as returned.')
+        return redirect('sales_detail', sale_number=sale.sale_number)
+
+    return render(request, 'sales/sales_return.html', {'sale': sale})
+
+
+@login_required
+@transaction.atomic
+def sales_cancel(request, sale_number):
+    sale = get_object_or_404(Sale, sale_number=sale_number)
+    if request.method == 'POST' and sale.order_status != 'cancelled':
+        for item in sale.items.all():
+            inventory, _ = Inventory.objects.get_or_create(
+                product=item.product,
+                defaults={'quantity_in_stock': 0}
+            )
+            inventory.quantity_in_stock += item.quantity
+            inventory.save()
+
+        if sale.customer:
+            from customers.models import CreditTransaction
+            credit_change = 0
+            if sale.payment_method == 'credit':
+                credit_change = sale.total_amount
+            elif sale.payment_status == 'partial':
+                credit_change = sale.total_amount - sale.paid_amount
+            if credit_change > 0:
+                sale.customer.current_credit = max(sale.customer.current_credit - credit_change, 0)
+                sale.customer.save()
+                CreditTransaction.objects.create(
+                    customer=sale.customer,
+                    transaction_type='refund',
+                    amount=credit_change,
+                    balance_after=sale.customer.current_credit,
+                    related_sale=sale,
+                )
+
+        sale.order_status = 'cancelled'
+        sale.save(update_fields=['order_status'])
+        messages.success(request, 'Sale marked as cancelled.')
+        return redirect('sales_detail', sale_number=sale.sale_number)
+
+    return render(request, 'sales/sales_cancel.html', {'sale': sale})
+
+
+@login_required
+def sales_return_list(request):
+    sales = Sale.objects.filter(order_status='returned').order_by('-sale_date')
+    return render(request, 'sales/returned_sales.html', {'sales': sales})
+
+
+@login_required
+def email_receipt(request, sale_number):
+    sale = get_object_or_404(Sale, sale_number=sale_number)
+    if not sale.customer or not sale.customer.email:
+        messages.error(request, 'Customer email is not available for this sale.')
+        return redirect('sales_detail', sale_number=sale.sale_number)
+
+    pdf_buffer = generate_receipt_pdf(sale)
+    email = EmailMessage(
+        subject=f"Receipt {sale.receipt_number or sale.sale_number}",
+        body="Please find your receipt attached. Thank you for your purchase!",
+        to=[sale.customer.email],
+    )
+    email.attach(
+        filename=f"receipt_{sale.sale_number}.pdf",
+        content=pdf_buffer.getvalue(),
+        mimetype='application/pdf',
+    )
+
+    try:
+        email.send(fail_silently=False)
+        messages.success(request, 'Receipt emailed to customer.')
+    except Exception as exc:
+        messages.error(request, f"Unable to send email: {exc}")
+
+    return redirect('sales_detail', sale_number=sale.sale_number)
 
 @login_required
 def sales_edit(request, sale_number):

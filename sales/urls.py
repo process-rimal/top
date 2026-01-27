@@ -16,6 +16,10 @@ urlpatterns = [
     # Sales History
     path('history/', views.sales_list, name='sales_list'),
     path('credits/', views.credit_records, name='credit_records'),
+    path('returns/', views.sales_return_list, name='sales_return_list'),
+    path('return/<str:sale_number>/', views.sales_return, name='sales_return'),
+    path('cancel/<str:sale_number>/', views.sales_cancel, name='sales_cancel'),
+    path('email/<str:sale_number>/', views.email_receipt, name='email_receipt'),
     path('edit/<str:sale_number>/', views.sales_edit, name='sales_edit'),
     path('delete/<str:sale_number>/', views.sales_delete, name='sales_delete'),
     path('<str:sale_number>/', views.sales_detail, name='sales_detail'),
