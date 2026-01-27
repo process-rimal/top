@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt {{ sale.sale_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Receipt</h2>
+            <div class="text-muted">{{ sale.receipt_number|default:sale.sale_number }}</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/sales/receipt/{{ sale.sale_number }}/pdf/" class="btn btn-outline-primary">View PDF</a>
+            <a href="/sales/receipt/{{ sale.sale_number }}/pdf/?download=1" class="btn btn-outline-secondary">Download PDF</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div><strong>Purchased Date:</strong> {{ sale.sale_date|date:"Y-m-d H:i" }}</div>
+                    <div><strong>Payment:</strong> {{ sale.get_payment_method_display }}</div>
+                    <div><strong>Status:</strong> {{ sale.payment_status }}</div>
+                </div>
+                <div class="col-md-8">
+                    <div><strong>Customer:</strong> {{ sale.customer.customer_name|default:"Walk-in Customer" }}</div>
+                    <div><strong>Phone:</strong> {{ sale.customer.phone_number|default:"—" }}</div>
+                    <div><strong>Address:</strong> {{ sale.customer.address|default:"—" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <strong>Items</strong>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Rate</th>
+                            <th class="text-end">Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sale.items.all %}
+                        <tr>
+                            <td>{{ item.product.product_name }}</td>
+                            <td class="text-end">{{ item.quantity }}</td>
+                            <td class="text-end">Rs. {{ item.unit_price }}</td>
+                            <td class="text-end">Rs. {{ item.line_total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Subtotal</th>
+                            <th class="text-end">Rs. {{ sale.subtotal }}</th>
+                        </tr>
+                        {% if sale.discount and sale.discount > 0 %}
+                        <tr>
+                            <th colspan="3" class="text-end">Discount</th>
+                            <th class="text-end">- Rs. {{ sale.discount }}</th>
+                        </tr>
+                        {% endif %}
+                        {% if sale.tax and sale.tax > 0 %}
+                        <tr>
+                            <th colspan="3" class="text-end">VAT</th>
+                            <th class="text-end">Rs. {{ sale.tax }}</th>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th colspan="3" class="text-end">Total</th>
+                            <th class="text-end">Rs. {{ sale.total_amount }}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Paid</th>
+                            <th class="text-end">Rs. {{ sale.paid_amount }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

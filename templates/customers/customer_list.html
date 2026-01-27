@@ -47,13 +47,18 @@
             <tbody>
                 {% for customer in customers %}
                 <tr>
-                    <td>{{ customer.customer_name }}</td>
+                    <td>
+                        <a href="/customers/{{ customer.phone_number }}/" class="text-decoration-none">
+                            {{ customer.customer_name }}
+                        </a>
+                    </td>
                     <td>{{ customer.phone_number }}</td>
                     <td>{{ customer.secondary_phone_number|default:"—" }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.city }}</td>
                     <td>Rs. {{ customer.current_credit }}</td>
                     <td>
+                        <a href="/customers/{{ customer.phone_number }}/" class="btn btn-sm btn-info">View</a>
                         <a href="/customers/{{ customer.phone_number }}/edit/" class="btn btn-sm btn-warning">Edit</a>
                         <a href="/customers/{{ customer.phone_number }}/delete/" class="btn btn-sm btn-danger">Delete</a>
                     </td>

@@ -27,7 +27,7 @@ class Product(models.Model):
     """Product Master Data"""
     
     sku = models.CharField(max_length=50, unique=True)  # Stock Keeping Unit
-    barcode = models.CharField(max_length=100, unique=True, blank=True)
+    barcode = models.CharField(max_length=100, unique=True, blank=True, null=True)
     product_name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     description = models.TextField(blank=True)

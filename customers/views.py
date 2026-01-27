@@ -43,7 +43,13 @@ def customer_add(request):
 @login_required
 def customer_detail(request, phone):
     customer = get_object_or_404(Customer, phone_number=phone)
-    return render(request, 'customers/customer_detail.html', {'customer': customer})
+    credit_transactions = customer.credit_transactions.select_related('related_sale').all()
+    sales = customer.sales.all()
+    return render(request, 'customers/customer_detail.html', {
+        'customer': customer,
+        'credit_transactions': credit_transactions,
+        'sales': sales,
+    })
 
 @login_required
 def customer_edit(request, phone):

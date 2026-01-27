@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}POS - Point of Sale{% endblock %}
 
@@ -52,6 +53,21 @@
             <strong>Products</strong>
         </div>
         <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Barcode</label>
+                    <input id="barcode-input" class="form-control" placeholder="Scan barcode...">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Product Name</label>
+                    <input id="barcode-product-input" class="form-control" list="barcode-product-list" placeholder="Choose product...">
+                    <datalist id="barcode-product-list">
+                        {% for product in products %}
+                        <option value="{{ product.product_name }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-bordered" id="pos-table">
                     <thead class="table-light">
@@ -88,14 +104,26 @@
 
             <div class="row mt-4">
                 <div class="col-md-6">
-                    <label class="form-label">Payment Method</label>
-                    <select id="payment-method" class="form-select">
-                        <option value="cash" selected>Cash</option>
-                        <option value="card">Card</option>
+                    <label class="form-label">Payment Type</label>
+                    <select id="payment-type" class="form-select">
+                        <option value="full" selected>Full Payment</option>
+                        <option value="partial">Partial Payment</option>
                         <option value="credit">Credit</option>
                     </select>
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label">Payment Method</label>
+                    <select id="payment-method" class="form-select">
+                        <option value="cash" selected>Cash</option>
+                        <option value="card">QR</option>
+                        <option value="credit">Credit</option>
+                    </select>
+                    <div id="card-qr-wrapper" class="mt-3 d-none">
+                        <div class="small text-muted mb-2">Scan to pay</div>
+                        <img id="card-qr" src="{% static 'qr.png' %}" alt="QR payment" class="img-fluid" style="max-width: 220px;">
+                    </div>
+                </div>
+                <div class="col-md-6 mt-3 mt-md-0">
                     <label class="form-label">Paid Amount</label>
                     <input id="paid-amount" type="number" class="form-control" value="0">
                 </div>
@@ -127,6 +155,7 @@ const products = [
     {
         id: {{ product.id }},
         name: "{{ product.product_name|escapejs }}",
+        barcode: "{{ product.barcode|default:''|escapejs }}",
         price: {{ product.selling_price }},
     },
     {% endfor %}
@@ -188,9 +217,30 @@ function recalcGrandTotal() {
     });
     document.getElementById('grand-total').textContent = `Rs. ${total.toFixed(2)}`;
     const paidInput = document.getElementById('paid-amount');
-    if (paidInput && !paidInput.dataset.touched) {
+    const paymentType = document.getElementById('payment-type')?.value;
+    if (paidInput && !paidInput.dataset.touched && paymentType === 'full') {
         paidInput.value = total.toFixed(2);
     }
+}
+
+function addProductToPos(product) {
+    const rows = Array.from(document.querySelectorAll('#pos-body tr'));
+    let targetRow = rows.find(row => !row.querySelector('.product-input').value.trim());
+    if (!targetRow) {
+        const tbody = document.getElementById('pos-body');
+        const newRow = tbody.children[0].cloneNode(true);
+        newRow.querySelectorAll('input').forEach(input => input.value = '');
+        newRow.querySelector('.qty-input').value = 1;
+        attachRowEvents(newRow);
+        tbody.appendChild(newRow);
+        targetRow = newRow;
+    }
+
+    targetRow.querySelector('.product-input').value = product.name;
+    targetRow.querySelector('.price-input').value = product.price;
+    targetRow.querySelector('.qty-input').value = 1;
+    recalcRow(targetRow);
+    recalcGrandTotal();
 }
 
 function attachRowEvents(row) {
@@ -213,6 +263,51 @@ function attachRowEvents(row) {
 
 document.querySelectorAll('#pos-body tr').forEach(attachRowEvents);
 
+const barcodeInput = document.getElementById('barcode-input');
+if (barcodeInput) {
+    barcodeInput.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') {
+            return;
+        }
+        e.preventDefault();
+        const barcodeValue = barcodeInput.value.trim();
+        if (!barcodeValue) {
+            return;
+        }
+        const product = products.find(p => p.barcode && p.barcode.toLowerCase() === barcodeValue.toLowerCase());
+        if (product) {
+            addProductToPos(product);
+            barcodeInput.value = '';
+        } else {
+            alert('No product found for that barcode.');
+        }
+    });
+}
+
+const barcodeProductInput = document.getElementById('barcode-product-input');
+if (barcodeProductInput) {
+    const addByName = () => {
+        const nameValue = barcodeProductInput.value.trim();
+        if (!nameValue) {
+            return;
+        }
+        const product = products.find(p => p.name.toLowerCase() === nameValue.toLowerCase());
+        if (product) {
+            addProductToPos(product);
+            barcodeProductInput.value = '';
+        } else {
+            alert('No product found with that name.');
+        }
+    };
+    barcodeProductInput.addEventListener('change', addByName);
+    barcodeProductInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addByName();
+        }
+    });
+}
+
 document.getElementById('add-row').addEventListener('click', (e) => {
     e.preventDefault();
     const tbody = document.getElementById('pos-body');
@@ -225,6 +320,47 @@ document.getElementById('add-row').addEventListener('click', (e) => {
 
 document.getElementById('paid-amount').addEventListener('input', (e) => {
     e.target.dataset.touched = 'true';
+});
+
+function syncPaymentControls() {
+    const paymentType = document.getElementById('payment-type').value;
+    const methodSelect = document.getElementById('payment-method');
+    const paidInput = document.getElementById('paid-amount');
+    const qrWrapper = document.getElementById('card-qr-wrapper');
+
+    if (paymentType === 'credit') {
+        methodSelect.value = 'credit';
+        methodSelect.disabled = true;
+        paidInput.value = 0;
+        paidInput.disabled = true;
+        paidInput.dataset.touched = 'true';
+        qrWrapper?.classList.add('d-none');
+        return;
+    }
+
+    methodSelect.disabled = false;
+    paidInput.disabled = false;
+
+    if (paymentType === 'full') {
+        paidInput.dataset.touched = '';
+        recalcGrandTotal();
+    }
+}
+
+document.getElementById('payment-type').addEventListener('change', () => {
+    syncPaymentControls();
+});
+
+document.getElementById('payment-method').addEventListener('change', (e) => {
+    const qrWrapper = document.getElementById('card-qr-wrapper');
+    if (!qrWrapper) {
+        return;
+    }
+    if (e.target.value === 'card') {
+        qrWrapper.classList.remove('d-none');
+    } else {
+        qrWrapper.classList.add('d-none');
+    }
 });
 
 document.getElementById('confirm-sale').addEventListener('click', async (e) => {
@@ -254,8 +390,11 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
     const subtotal = items.reduce((sum, i) => sum + i.line_total, 0);
     const tax = 0;
     const total = subtotal + tax;
+    const paymentType = document.getElementById('payment-type').value;
     const paymentMethod = document.getElementById('payment-method').value;
-    const paidAmount = paymentMethod === 'credit' ? 0 : parseFloat(document.getElementById('paid-amount').value || '0');
+    const paidAmount = paymentType === 'credit'
+        ? 0
+        : parseFloat(document.getElementById('paid-amount').value || '0');
 
     const payload = {
         customer_name: document.getElementById('cust-name').textContent !== '—' ? document.getElementById('cust-name').textContent : null,
@@ -265,7 +404,7 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
         tax,
         total,
         paid_amount: paidAmount,
-        payment_method: paymentMethod,
+        payment_method: paymentType === 'credit' ? 'credit' : paymentMethod,
     };
 
     const response = await fetch('/sales/api/create-sale/', {
@@ -280,11 +419,13 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
     const result = await response.json();
     if (result.success) {
         alert(`Sale saved. Receipt: ${result.receipt_number}`);
-        window.location.reload();
+        window.location.href = `/sales/receipt/${result.sale_number}/`;
     } else {
         alert(result.error || 'Failed to save sale');
     }
 });
+
+syncPaymentControls();
 
 function getCookie(name) {
     let cookieValue = null;

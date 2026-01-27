@@ -110,17 +110,19 @@ def create_sale_api(request):
             inventory.quantity_in_stock -= int(item['quantity'])
             inventory.save()
         
-        if customer and payment_method == 'credit':
+        if customer:
             from customers.models import CreditTransaction
-            customer.current_credit += total_amount
-            customer.save()
-            CreditTransaction.objects.create(
-                customer=customer,
-                transaction_type='purchase',
-                amount=total_amount,
-                balance_after=customer.current_credit,
-                related_sale=sale,
-            )
+            due_amount = total_amount - paid_amount
+            if due_amount > 0:
+                customer.current_credit += due_amount
+                customer.save()
+                CreditTransaction.objects.create(
+                    customer=customer,
+                    transaction_type='purchase',
+                    amount=due_amount,
+                    balance_after=customer.current_credit,
+                    related_sale=sale,
+                )
         
         return JsonResponse({
             'success': True,
@@ -145,7 +147,8 @@ def receipt_pdf(request, sale_number):
     sale = get_object_or_404(Sale, sale_number=sale_number)
     buffer = generate_receipt_pdf(sale)
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="receipt_{sale_number}.pdf"'
+    disposition = 'attachment' if request.GET.get('download') == '1' else 'inline'
+    response['Content-Disposition'] = f'{disposition}; filename="receipt_{sale_number}.pdf"'
     return response
 
 @login_required

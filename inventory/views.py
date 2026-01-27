@@ -7,6 +7,25 @@ import barcode
 from barcode.writer import ImageWriter
 import io
 
+
+def _generate_unique_barcode(base_barcode, exclude_id=None):
+    if not base_barcode:
+        return None
+    base_barcode = base_barcode.strip()
+    if not base_barcode:
+        return None
+    queryset = Product.objects.all()
+    if exclude_id:
+        queryset = queryset.exclude(id=exclude_id)
+    if not queryset.filter(barcode=base_barcode).exists():
+        return base_barcode
+    counter = 1
+    while True:
+        candidate = f"{base_barcode}({counter})"
+        if not queryset.filter(barcode=candidate).exists():
+            return candidate
+        counter += 1
+
 @login_required
 def product_list(request):
     products = Product.objects.all()
@@ -38,26 +57,38 @@ def product_add(request):
         category_id = request.POST.get('category')
         cost_price = request.POST.get('cost_price')
         selling_price = request.POST.get('selling_price')
-        barcode_value = request.POST.get('barcode') or ''
+        barcode_value = (request.POST.get('barcode') or '').strip() or None
         wholesale_price = request.POST.get('wholesale_price') or None
         unit = request.POST.get('unit') or 'piece'
         reorder_level = request.POST.get('reorder_level') or 10
         initial_quantity = int(request.POST.get('quantity_in_stock') or 0)
         image = request.FILES.get('image')
-        
-        category = Category.objects.get(id=category_id)
-        product = Product.objects.create(
-            sku=sku,
-            product_name=product_name,
-            category=category,
-            cost_price=cost_price,
-            selling_price=selling_price,
-            barcode=barcode_value,
-            wholesale_price=wholesale_price,
-            unit=unit,
-            reorder_level=reorder_level,
-            image=image,
-        )
+        if not category_id:
+            messages.error(request, 'Please select a category.')
+            return render(request, 'inventory/product_add.html', {'categories': Category.objects.all()})
+        try:
+            category = Category.objects.get(id=category_id)
+        except (Category.DoesNotExist, ValueError):
+            category = Category.objects.filter(name__iexact=str(category_id).strip()).first()
+            if not category:
+                messages.error(request, 'Selected category is invalid.')
+                return render(request, 'inventory/product_add.html', {'categories': Category.objects.all()})
+        try:
+            product = Product.objects.create(
+                sku=sku,
+                product_name=product_name,
+                category=category,
+                cost_price=cost_price,
+                selling_price=selling_price,
+                barcode=_generate_unique_barcode(barcode_value),
+                wholesale_price=wholesale_price,
+                unit=unit,
+                reorder_level=reorder_level,
+                image=image,
+            )
+        except Exception as exc:
+            messages.error(request, f"Unable to save product: {exc}")
+            return redirect('product_add')
         
         Inventory.objects.create(product=product, quantity_in_stock=initial_quantity)
         return redirect('product_list')
@@ -69,19 +100,42 @@ def product_add(request):
 def product_edit(request, pk):
     product = get_object_or_404(Product, id=pk)
     if request.method == 'POST':
+        new_sku = (request.POST.get('sku') or '').strip()
+        if not new_sku:
+            messages.error(request, 'SKU is required.')
+            context = {
+                'product': product,
+                'categories': Category.objects.all()
+            }
+            return render(request, 'inventory/product_edit.html', context)
+        if Product.objects.exclude(id=product.id).filter(sku=new_sku).exists():
+            messages.error(request, 'SKU already exists. Please use a different SKU.')
+            context = {
+                'product': product,
+                'categories': Category.objects.all()
+            }
+            return render(request, 'inventory/product_edit.html', context)
+        product.sku = new_sku
         product.product_name = request.POST.get('product_name')
         product.category_id = request.POST.get('category')
         product.cost_price = request.POST.get('cost_price')
         product.selling_price = request.POST.get('selling_price')
-        product.barcode = request.POST.get('barcode') or ''
+        new_barcode = (request.POST.get('barcode') or '').strip() or None
+        if new_barcode == product.barcode:
+            product.barcode = new_barcode
+        else:
+            product.barcode = _generate_unique_barcode(new_barcode, exclude_id=product.id)
         product.wholesale_price = request.POST.get('wholesale_price') or None
         product.unit = request.POST.get('unit') or product.unit
         product.reorder_level = request.POST.get('reorder_level') or product.reorder_level
         image = request.FILES.get('image')
         if image:
             product.image = image
-        product.save()
-        return redirect('product_list')
+        try:
+            product.save()
+            return redirect('product_list')
+        except Exception as exc:
+            messages.error(request, f"Unable to save product: {exc}")
     
     context = {
         'product': product,

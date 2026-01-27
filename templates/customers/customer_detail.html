@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Details{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">{{ customer.customer_name }}</h2>
+            <div class="text-muted">{{ customer.phone_number }}</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/customers/" class="btn btn-outline-secondary">Back to Customers</a>
+            <a href="/customers/{{ customer.phone_number }}/edit/" class="btn btn-warning">Edit</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Contact</h5>
+                    <p class="mb-1"><strong>Phone:</strong> {{ customer.phone_number }}</p>
+                    <p class="mb-1"><strong>Secondary:</strong> {{ customer.secondary_phone_number|default:"—" }}</p>
+                    <p class="mb-1"><strong>Email:</strong> {{ customer.email|default:"—" }}</p>
+                    <p class="mb-0"><strong>City:</strong> {{ customer.city|default:"—" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Address</h5>
+                    <p class="mb-0">{{ customer.address|default:"—" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Credit</h5>
+                    <p class="mb-1"><strong>Current Credit:</strong> Rs. {{ customer.current_credit }}</p>
+                    <p class="mb-0"><strong>Loyalty Points:</strong> {{ customer.loyalty_points }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Sales History</h5>
+        </div>
+        <div class="card-body">
+            {% if sales %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Sale #</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Paid</th>
+                            <th>Status</th>
+                            <th>Method</th>
+                            <th>Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in sales %}
+                        <tr>
+                            <td>{{ sale.sale_number }}</td>
+                            <td>{{ sale.sale_date|date:"Y-m-d H:i" }}</td>
+                            <td>Rs. {{ sale.total_amount }}</td>
+                            <td>Rs. {{ sale.paid_amount }}</td>
+                            <td>{{ sale.payment_status }}</td>
+                            <td>{{ sale.payment_method }}</td>
+                            <td>
+                                <a href="/sales/receipt/{{ sale.sale_number }}/pdf/" class="btn btn-sm btn-outline-primary">View</a>
+                                <a href="/sales/receipt/{{ sale.sale_number }}/pdf/?download=1" class="btn btn-sm btn-outline-secondary">Download</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-0">No sales found for this customer.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Credit Transactions</h5>
+        </div>
+        <div class="card-body">
+            {% if credit_transactions %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                            <th>Description</th>
+                            <th>Related Sale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in credit_transactions %}
+                        <tr>
+                            <td>{{ tx.transaction_date|date:"Y-m-d H:i" }}</td>
+                            <td>{{ tx.transaction_type }}</td>
+                            <td>Rs. {{ tx.amount }}</td>
+                            <td>Rs. {{ tx.balance_after }}</td>
+                            <td>{{ tx.description|default:"—" }}</td>
+                            <td>
+                                {% if tx.related_sale %}
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <span>{{ tx.related_sale.sale_number }}</span>
+                                        <a href="/sales/receipt/{{ tx.related_sale.sale_number }}/pdf/" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="/sales/receipt/{{ tx.related_sale.sale_number }}/pdf/?download=1" class="btn btn-sm btn-outline-secondary">Download</a>
+                                    </div>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-0">No credit transactions found for this customer.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
