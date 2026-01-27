@@ -12,15 +12,35 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-2">
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Customer or sale number">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Search By</label>
+                    <select name="filter_by" class="form-select">
+                        <option value="customer" {% if filter_by == 'customer' %}selected{% endif %}>Customer Name</option>
+                        <option value="phone" {% if filter_by == 'phone' %}selected{% endif %}>Customer Phone</option>
+                        <option value="sale_number" {% if filter_by == 'sale_number' %}selected{% endif %}>Sale Number</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Sort By</label>
+                    <select name="sort_by" class="form-select">
+                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>Date</option>
+                        <option value="customer" {% if sort_by == 'customer' %}selected{% endif %}>Customer Name</option>
+                        <option value="phone" {% if sort_by == 'phone' %}selected{% endif %}>Customer Phone</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">From Date</label>
                     <input type="date" name="from_date" class="form-control" value="{{ from_date }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <label class="form-label">To Date</label>
                     <input type="date" name="to_date" class="form-control" value="{{ to_date }}">
                 </div>
-                <div class="col-md-4 d-flex align-items-end gap-2">
+                <div class="col-md-1 d-flex align-items-end gap-2">
                     <button type="submit" class="btn btn-outline-primary">Filter</button>
                     <a href="/sales/history/" class="btn btn-outline-secondary">Clear</a>
                 </div>

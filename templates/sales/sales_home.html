@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Sales{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Sales</h2>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">New Sales</h5>
+                    <p class="card-text">Create a new bill from the POS.</p>
+                    <a href="/sales/pos/" class="btn btn-primary">Go to POS</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Sales History</h5>
+                    <p class="card-text">Review past sales with filters and sorting.</p>
+                    <a href="/sales/history/" class="btn btn-outline-primary">View History</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Credit Records</h5>
+                    <p class="card-text">Customers with outstanding credit balances.</p>
+                    <a href="/sales/credits/" class="btn btn-outline-secondary">View Credits</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -9,9 +9,14 @@ from django.db.models import Q
 from .models import Sale, SaleItem
 from inventory.models import Product, Inventory
 from customers.models import Customer
-from .utils import generate_receipt_pdf
+from .utils import generate_receipt_pdf, number_to_words
 from decimal import Decimal
 import json
+
+@login_required
+def sales_home(request):
+    return render(request, 'sales/sales_home.html')
+
 
 @login_required
 def pos_view(request):
@@ -140,7 +145,11 @@ def create_sale_api(request):
 @login_required
 def print_receipt(request, sale_number):
     sale = get_object_or_404(Sale, sale_number=sale_number)
-    return render(request, 'sales/receipt.html', {'sale': sale})
+    amount_in_words = number_to_words(sale.total_amount)
+    return render(request, 'sales/receipt.html', {
+        'sale': sale,
+        'amount_in_words': amount_in_words,
+    })
 
 @login_required
 def receipt_pdf(request, sale_number):
@@ -153,19 +162,48 @@ def receipt_pdf(request, sale_number):
 
 @login_required
 def sales_list(request):
-    sales = Sale.objects.all().order_by('-sale_date')
+    sales = Sale.objects.select_related('customer').all()
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
+    query = request.GET.get('q', '').strip()
+    filter_by = request.GET.get('filter_by', 'customer')
+    sort_by = request.GET.get('sort_by', 'date')
     
     if from_date:
         sales = sales.filter(sale_date__date__gte=from_date)
     if to_date:
         sales = sales.filter(sale_date__date__lte=to_date)
+
+    if query:
+        if filter_by == 'phone':
+            sales = sales.filter(customer__phone_number__icontains=query)
+        elif filter_by == 'sale_number':
+            sales = sales.filter(sale_number__icontains=query)
+        else:
+            sales = sales.filter(customer__customer_name__icontains=query)
+
+    if sort_by == 'customer':
+        sales = sales.order_by('customer__customer_name', '-sale_date')
+    elif sort_by == 'phone':
+        sales = sales.order_by('customer__phone_number', '-sale_date')
+    else:
+        sales = sales.order_by('-sale_date')
     
     return render(request, 'sales/sales_list.html', {
         'sales': sales,
         'from_date': from_date,
         'to_date': to_date,
+        'query': query,
+        'filter_by': filter_by,
+        'sort_by': sort_by,
+    })
+
+
+@login_required
+def credit_records(request):
+    customers = Customer.objects.filter(current_credit__gt=0).order_by('-current_credit')
+    return render(request, 'sales/credit_records.html', {
+        'customers': customers,
     })
 
 @login_required

@@ -12,6 +12,50 @@ from django.conf import settings
 import barcode
 from barcode.writer import ImageWriter
 
+
+def number_to_words(amount):
+    units = [
+        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+        "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+        "eighteen", "nineteen"
+    ]
+    tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+
+    def two_digit(n):
+        if n < 20:
+            return units[n]
+        return tens[n // 10] + ("-" + units[n % 10] if n % 10 else "")
+
+    def three_digit(n):
+        if n < 100:
+            return two_digit(n)
+        rem = n % 100
+        return units[n // 100] + " hundred" + (" " + two_digit(rem) if rem else "")
+
+    def chunk_to_words(n):
+        parts = []
+        billions = n // 1_000_000_000
+        millions = (n // 1_000_000) % 1_000
+        thousands = (n // 1_000) % 1_000
+        remainder = n % 1_000
+        if billions:
+            parts.append(three_digit(billions) + " billion")
+        if millions:
+            parts.append(three_digit(millions) + " million")
+        if thousands:
+            parts.append(three_digit(thousands) + " thousand")
+        if remainder:
+            parts.append(three_digit(remainder))
+        return " ".join(parts) if parts else "zero"
+
+    amount = round(float(amount), 2)
+    rupees = int(amount)
+    paise = int(round((amount - rupees) * 100))
+    words = f"{chunk_to_words(rupees)} rupees"
+    if paise:
+        words += f" and {two_digit(paise)} paise"
+    return words
+
 def generate_receipt_pdf(sale):
     """Generate PDF receipt for a sale"""
     
@@ -29,11 +73,12 @@ def generate_receipt_pdf(sale):
     styles = getSampleStyleSheet()
     
     # Shop Header
-    shop_name = Paragraph('<b>Kopila Books &amp; stationery</b>', ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=14))
-    shop_address = Paragraph('Gaindakot, Nepal', ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=10))
-    shop_phone = Paragraph('Ph: 9845817460', ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=10))
+    shop_name = Paragraph('<b>Kopila Books &amp; stationery</b>', ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=16))
+    shop_address = Paragraph('Gaindakot, Nepal', ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=12))
+    shop_phone = Paragraph('Ph: 9845817460', ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=12))
     
     elements.append(shop_name)
+    elements.append(Spacer(1, 0.05*inch))
     elements.append(shop_address)
     elements.append(shop_phone)
     elements.append(Spacer(1, 0.1*inch))
@@ -41,14 +86,14 @@ def generate_receipt_pdf(sale):
     # Sale Info
     receipt_no = sale.receipt_number or sale.sale_number
     sale_info_lines = [
-        f"Receipt No: {receipt_no}",
-        f"Purchased Date: {sale.sale_date.strftime('%Y-%m-%d %H:%M')}",
+        f"<b>Receipt No:</b> {receipt_no}",
+        f"<b>Purchased Date:</b> {sale.sale_date.strftime('%Y-%m-%d %H:%M')}",
     ]
     if sale.customer:
         customer_name = sale.customer.customer_name
         customer_address = sale.customer.address or ''
-        sale_info_lines.append(f"Customer: {customer_name}")
-        sale_info_lines.append(f"Address: {customer_address}" if customer_address else "Address: —")
+        sale_info_lines.append(f"<b>Customer:</b> {customer_name}")
+        sale_info_lines.append(f"<b>Address:</b> {customer_address}" if customer_address else "<b>Address:</b> —")
 
     sale_info = "<br/>".join(sale_info_lines)
 
@@ -85,19 +130,34 @@ def generate_receipt_pdf(sale):
     ]))
     
     elements.append(table)
+    elements.append(Spacer(1, 0.15*inch))
+
+    amount_words = number_to_words(sale.total_amount)
+    salesperson = ""
+    if getattr(sale, 'cashier', None) and getattr(sale.cashier, 'user', None):
+        salesperson = sale.cashier.user.get_full_name() or sale.cashier.user.username
+    credit_balance = ""
+    if getattr(sale, 'customer', None):
+        credit_balance = f"Customer Credit Balance: {sale.customer.current_credit}"
+    amount_block = (
+        f"<b>Amount in Words:</b> {amount_words}" +
+        (f"<br/><b>Sales Person:</b> {salesperson}" if salesperson else "") +
+        (f"<br/><b>{credit_balance}</b>" if credit_balance else "")
+    )
+    elements.append(Paragraph(amount_block, ParagraphStyle(name='left', alignment=TA_LEFT, fontSize=10)))
     elements.append(Spacer(1, 0.1*inch))
     
     # Payment Method
-    payment_lines = [f"Payment: {sale.get_payment_method_display()}"]
-    if sale.payment_status != 'paid':
-        payment_lines.append(f"Due: {sale.due_amount():.2f}")
+    payment_lines = [
+        f"<b>Payment:</b> {sale.get_payment_method_display()}",
+    ]
     payment_info = "<br/>".join(payment_lines)
 
     elements.append(Paragraph(payment_info, ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=10)))
     elements.append(Spacer(1, 0.1*inch))
     
     # Footer
-    footer = "Thank You!<br/>Visit Again"
+    footer = "<b><i>Thank You!</i></b><br/><b><i>Visit Again</i></b> ❤️"
     elements.append(Paragraph(footer, ParagraphStyle(name='center', alignment=TA_CENTER, fontSize=10)))
     
     doc.build(elements)
