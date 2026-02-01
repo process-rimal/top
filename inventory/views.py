@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -28,14 +29,53 @@ def _generate_unique_barcode(base_barcode, exclude_id=None):
 
 @login_required
 def product_list(request):
-    products = Product.objects.all()
-    category = request.GET.get('category')
-    if category:
-        products = products.filter(category__id=category)
+    products = Product.objects.select_related('category', 'inventory').all()
+    query = request.GET.get('q', '').strip()
+    filter_by = request.GET.get('filter_by', 'name')
+    sort_by = request.GET.get('sort_by', 'name_asc')
+
+    if query:
+        if filter_by == 'sku':
+            products = products.filter(sku__icontains=query)
+        elif filter_by == 'barcode':
+            products = products.filter(barcode__icontains=query)
+        elif filter_by == 'category':
+            products = products.filter(category__name__icontains=query)
+        elif filter_by == 'price':
+            try:
+                price_value = float(query)
+                products = products.filter(selling_price=price_value)
+            except ValueError:
+                products = products.none()
+        elif filter_by == 'all':
+            products = products.filter(
+                Q(product_name__icontains=query) |
+                Q(sku__icontains=query) |
+                Q(barcode__icontains=query) |
+                Q(category__name__icontains=query)
+            )
+        else:
+            products = products.filter(product_name__icontains=query)
+
+    if sort_by == 'name_desc':
+        products = products.order_by('-product_name')
+    elif sort_by == 'price_asc':
+        products = products.order_by('selling_price', 'product_name')
+    elif sort_by == 'price_desc':
+        products = products.order_by('-selling_price', 'product_name')
+    elif sort_by == 'stock_asc':
+        products = products.order_by('inventory__quantity_in_stock', 'product_name')
+    elif sort_by == 'stock_desc':
+        products = products.order_by('-inventory__quantity_in_stock', 'product_name')
+    else:
+        products = products.order_by('product_name')
     
     context = {
         'products': products,
-        'categories': Category.objects.all()
+        'categories': Category.objects.all(),
+        'query': query,
+        'filter_by': filter_by,
+        'sort_by': sort_by,
     }
     return render(request, 'inventory/products_list.html', context)
 

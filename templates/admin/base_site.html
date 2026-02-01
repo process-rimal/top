@@ -1,12 +1,261 @@
-{% extends "admin/base.html" %}
+20{% extends "admin/base.html" %}
 {% load i18n %}
 
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --admin-bg: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 40%, #f1f5f9 100%);
+        --admin-card: #ffffff;
+        --admin-border: #e2e8f0;
+        --admin-primary: #6366f1;
+        --admin-primary-dark: #4f46e5;
+        --admin-secondary: #0ea5e9;
+        --admin-text: #0f172a;
+        --admin-muted: #64748b;
+        --admin-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+        --admin-radius: 16px;
+    }
+
+    body, #container {
+        background: var(--admin-bg);
+        color: var(--admin-text);
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    #header {
+        background: linear-gradient(135deg, #111827 0%, #1e293b 45%, #312e81 100%);
+        color: #fff;
+        border-bottom: none;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.28);
+    }
+
+    #header #branding {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    #header #branding:before {
+        content: "";
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #6366f1, #22d3ee);
+        box-shadow: 0 10px 20px rgba(34, 211, 238, 0.35);
+        display: inline-block;
+    }
+
+    #branding h1 {
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        font-size: 1.4rem;
+    }
+
+    #user-tools {
+        font-weight: 500;
+        color: #cbd5f5;
+    }
+
+    #content {
+        padding: 28px;
+    }
+
+    .module, .dashboard #content-main .module, .inline-group {
+        background: var(--admin-card);
+        border: 1px solid var(--admin-border);
+        border-radius: var(--admin-radius);
+        box-shadow: var(--admin-shadow);
+        backdrop-filter: blur(6px);
+    }
+
+    .module h2, .module caption, .dashboard-module h2 {
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08), transparent);
+        color: var(--admin-text);
+        border-bottom: 1px solid var(--admin-border);
+        font-weight: 600;
+        padding: 16px 20px;
+    }
+
+    .module table {
+        border-radius: var(--admin-radius);
+        overflow: hidden;
+    }
+
+    .dashboard #content-main .module table th, .dashboard #content-main .module table td {
+        border-color: var(--admin-border);
+    }
+
+    .breadcrumbs {
+        background: transparent;
+        color: var(--admin-muted);
+        padding: 0 28px 16px;
+        font-weight: 500;
+    }
+
+    a:link, a:visited {
+        color: var(--admin-primary);
+    }
+
+    a:hover, a:focus {
+        color: var(--admin-primary-dark);
+    }
+
+    .button, input[type=submit], input[type=button], .submit-row input, .submit-row a {
+        background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+        border-radius: 12px;
+        border: none;
+        color: #fff;
+        padding: 10px 16px;
+        font-weight: 600;
+        box-shadow: 0 12px 24px rgba(79, 70, 229, 0.2);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, .submit-row a:hover {
+        background: linear-gradient(135deg, var(--admin-primary-dark), #0284c7);
+        box-shadow: 0 16px 28px rgba(67, 56, 202, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .button.default, input[type=submit].default {
+        background: linear-gradient(135deg, #10b981, #22c55e);
+        box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+    }
+
+    .button.default:hover, input[type=submit].default:hover {
+        background: linear-gradient(135deg, #059669, #16a34a);
+        box-shadow: 0 16px 28px rgba(5, 150, 105, 0.25);
+    }
+
+    .submit-row {
+        background: transparent;
+        border-top: none;
+        padding: 16px 0 0;
+    }
+
+    .navbar {
+        margin: 0 0 16px 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .nav-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+        background: rgba(15, 23, 42, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        padding: 6px;
+        backdrop-filter: blur(8px);
+    }
+
+    .nav-group-title {
+        color: #e2e8f0;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-right: 10px;
+        align-self: center;
+        padding: 0 6px;
+    }
+
+    .nav-group a.button {
+        background: transparent;
+        border-radius: 10px;
+        padding: 8px 12px;
+        color: #e2e8f0;
+    }
+
+    .nav-group a.button:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .navbar a.button {
+        box-shadow: none;
+    }
+
+    .aligned label {
+        color: var(--admin-muted);
+        font-weight: 600;
+    }
+
+    .form-row {
+        border-bottom: 1px solid var(--admin-border);
+        padding: 16px 20px;
+    }
+
+    .form-row:last-child {
+        border-bottom: none;
+    }
+
+    .selector, .selector .selector-available, .selector .selector-chosen {
+        border-radius: 12px;
+        border-color: var(--admin-border);
+    }
+
+    #changelist-filter {
+        background: var(--admin-card);
+        border-radius: 14px;
+        border: 1px solid var(--admin-border);
+        box-shadow: var(--admin-shadow);
+    }
+
+    #changelist-filter h2 {
+        background: transparent;
+        color: var(--admin-text);
+        border-bottom: 1px solid var(--admin-border);
+        font-weight: 600;
+    }
+
+    table#result_list {
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: var(--admin-shadow);
+    }
+
+    #result_list thead th {
+        background: #e0e7ff;
+        color: #1e1b4b;
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+    #result_list tbody tr:nth-child(even) {
+        background: #f1f5f9;
+    }
+
+    #result_list tbody tr:hover {
+        background: #eef2ff;
+    }
+
+    .paginator {
+        color: var(--admin-muted);
+    }
+
+    .messagelist li {
+        border-radius: 12px;
+        box-shadow: var(--admin-shadow);
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">Shop Management Admin</h1>
+{% endblock %}
+
 {% block nav-global %}
-<nav class="navbar" style="margin: 0 0 16px 0; display: flex; gap: 12px; align-items: center;">
-    <a href="/inventory/" class="button" style="padding: 6px 10px;">Inventory</a>
-    <a href="/sales/" class="button" style="padding: 6px 10px;">Sales</a>
-    <a href="/reports/" class="button" style="padding: 6px 10px;">Reports</a>
-    <a href="/customers/" class="button" style="padding: 6px 10px;">Customers</a>
-    <a href="/accounts/logout/" class="button" style="padding: 6px 10px;">Logout</a>
+<nav class="navbar">
+    <div class="nav-group">
+        <span class="nav-group-title">Administration</span>
+        <a href="/inventory/" class="button">Inventory</a>
+        <a href="/sales/" class="button">Sales</a>
+        <a href="/reports/" class="button">Reports</a>
+        <a href="/customers/" class="button">Customers</a>
+        <a href="/accounts/logout/" class="button">Logout</a>
+    </div>
 </nav>
 {% endblock %}

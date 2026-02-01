@@ -1,0 +1,141 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .admin-hero {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(14, 165, 233, 0.14));
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .admin-hero h2 {
+        margin: 0 0 6px 0;
+        font-size: 1.5rem;
+        color: #0f172a;
+    }
+
+    .admin-hero p {
+        margin: 0;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .admin-hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .admin-hero-actions a {
+        text-decoration: none;
+    }
+
+    .admin-dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+    .admin-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 18px;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .admin-card h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #1e293b;
+    }
+
+    .admin-card p {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .admin-card-links {
+        display: grid;
+        gap: 8px;
+    }
+
+    .admin-card-links a {
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #1e293b;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .admin-card-links a:hover {
+        background: #eef2ff;
+        transform: translateY(-1px);
+    }
+
+    .admin-card-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-hero">
+    <div>
+        <h2>{% trans "Welcome back" %} {{ user.get_full_name|default:user.username }}</h2>
+        <p>{% trans "Manage sales, inventory, customers, and reports with a quick overview." %}</p>
+    </div>
+    <div class="admin-hero-actions">
+        <a class="button default" href="/sales/">{% trans "Open POS" %}</a>
+        <a class="button" href="/inventory/">{% trans "Manage Inventory" %}</a>
+    </div>
+</div>
+
+{% if app_list %}
+<div class="admin-dashboard">
+    {% for app in app_list %}
+    <section class="admin-card">
+        <div>
+            <h3>{{ app.name }}</h3>
+            <p>{% trans "Quick access to" %} {{ app.name|lower }} {% trans "management tools." %}</p>
+        </div>
+        <div class="admin-card-links">
+            {% for model in app.models %}
+            {% if model.admin_url %}
+            <a href="{{ model.admin_url }}">{{ model.name }}</a>
+            {% else %}
+            <span>{{ model.name }}</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <div class="admin-card-meta">
+            <span>{{ app.models|length }} {% trans "sections" %}</span>
+            {% if app.app_url %}
+            <a href="{{ app.app_url }}">{% trans "View app" %}</a>
+            {% endif %}
+        </div>
+    </section>
+    {% endfor %}
+</div>
+{% else %}
+<p>{% trans "You don't have permission to view or edit anything." %}</p>
+{% endif %}
+{% endblock %}

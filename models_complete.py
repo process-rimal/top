@@ -330,7 +330,7 @@ class Sale(models.Model):
     
     PAYMENT_METHOD = [
         ('cash', 'Cash'),
-        ('card', 'Card'),
+        ('card', 'QR'),
         ('credit', 'Credit'),
         ('cheque', 'Cheque'),
         ('momo', 'Mobile Money'),

@@ -11,6 +11,7 @@ def customer_list(request):
     irregular_customers = IrregularCustomer.objects.all()
     query = request.GET.get('q', '').strip()
     filter_by = request.GET.get('filter_by', 'name')
+    sort_by = request.GET.get('sort_by', 'name_asc')
     if query:
         if filter_by == 'phone':
             customers = customers.filter(
@@ -18,17 +19,59 @@ def customer_list(request):
                 Q(secondary_phone_number__icontains=query)
             )
             irregular_customers = irregular_customers.filter(phone_number__icontains=query)
+        elif filter_by == 'secondary_phone':
+            customers = customers.filter(secondary_phone_number__icontains=query)
+            irregular_customers = irregular_customers.none()
+        elif filter_by == 'email':
+            customers = customers.filter(email__icontains=query)
+            irregular_customers = irregular_customers.none()
         elif filter_by == 'address':
             customers = customers.filter(Q(address__icontains=query) | Q(city__icontains=query))
             irregular_customers = irregular_customers.filter(address__icontains=query)
+        elif filter_by == 'credit':
+            try:
+                credit_value = float(query)
+                customers = customers.filter(current_credit=credit_value)
+                irregular_customers = irregular_customers.none()
+            except ValueError:
+                customers = customers.none()
+                irregular_customers = irregular_customers.none()
+        elif filter_by == 'all':
+            customers = customers.filter(
+                Q(customer_name__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(secondary_phone_number__icontains=query) |
+                Q(email__icontains=query) |
+                Q(address__icontains=query) |
+                Q(city__icontains=query)
+            )
+            irregular_customers = irregular_customers.filter(
+                Q(customer_name__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(address__icontains=query)
+            )
         else:
             customers = customers.filter(customer_name__icontains=query)
             irregular_customers = irregular_customers.filter(customer_name__icontains=query)
+    if sort_by == 'name_desc':
+        customers = customers.order_by('-customer_name')
+        irregular_customers = irregular_customers.order_by('-customer_name')
+    elif sort_by == 'credit_asc':
+        customers = customers.order_by('current_credit', 'customer_name')
+        irregular_customers = irregular_customers.order_by('customer_name')
+    elif sort_by == 'credit_desc':
+        customers = customers.order_by('-current_credit', 'customer_name')
+        irregular_customers = irregular_customers.order_by('customer_name')
+    else:
+        customers = customers.order_by('customer_name')
+        irregular_customers = irregular_customers.order_by('customer_name')
+
     return render(request, 'customers/customer_list.html', {
         'customers': customers,
         'irregular_customers': irregular_customers,
         'query': query,
         'filter_by': filter_by,
+        'sort_by': sort_by,
     })
 
 @login_required

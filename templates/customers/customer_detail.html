@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="section-banner d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">{{ customer.customer_name }}</h2>
-            <div class="text-muted">{{ customer.phone_number }}</div>
+            <h2>{{ customer.customer_name }}</h2>
+            <p>{{ customer.phone_number }}</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="mt-3 mt-md-0 d-flex gap-2">
             <a href="/customers/" class="btn btn-outline-secondary">Back to Customers</a>
             <a href="/customers/{{ customer.phone_number }}/edit/" class="btn btn-warning">Edit</a>
         </div>

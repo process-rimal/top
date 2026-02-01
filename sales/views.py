@@ -192,16 +192,46 @@ def sales_list(request):
             )
         elif filter_by == 'sale_number':
             sales = sales.filter(sale_number__icontains=query)
+        elif filter_by == 'amount':
+            try:
+                amount_value = float(query)
+                sales = sales.filter(total_amount=amount_value)
+            except ValueError:
+                sales = sales.none()
+        elif filter_by == 'payment_status':
+            sales = sales.filter(payment_status__icontains=query)
+        elif filter_by == 'order_status':
+            sales = sales.filter(order_status__icontains=query)
+        elif filter_by == 'all':
+            sales = sales.filter(
+                Q(sale_number__icontains=query) |
+                Q(customer__customer_name__icontains=query) |
+                Q(irregular_customer__customer_name__icontains=query) |
+                Q(customer__phone_number__icontains=query) |
+                Q(irregular_customer__phone_number__icontains=query) |
+                Q(payment_status__icontains=query) |
+                Q(order_status__icontains=query)
+            )
         else:
             sales = sales.filter(
                 Q(customer__customer_name__icontains=query) |
                 Q(irregular_customer__customer_name__icontains=query)
             )
 
-    if sort_by == 'customer':
+    if sort_by == 'customer_asc':
         sales = sales.order_by('customer__customer_name', 'irregular_customer__customer_name', '-sale_date')
+    elif sort_by == 'customer_desc':
+        sales = sales.order_by('-customer__customer_name', '-irregular_customer__customer_name', '-sale_date')
     elif sort_by == 'phone':
         sales = sales.order_by('customer__phone_number', 'irregular_customer__phone_number', '-sale_date')
+    elif sort_by == 'amount_asc':
+        sales = sales.order_by('total_amount', '-sale_date')
+    elif sort_by == 'amount_desc':
+        sales = sales.order_by('-total_amount', '-sale_date')
+    elif sort_by == 'sale_number_asc':
+        sales = sales.order_by('sale_number', '-sale_date')
+    elif sort_by == 'sale_number_desc':
+        sales = sales.order_by('-sale_number', '-sale_date')
     else:
         sales = sales.order_by('-sale_date')
     
@@ -217,9 +247,50 @@ def sales_list(request):
 
 @login_required
 def credit_records(request):
-    customers = Customer.objects.filter(current_credit__gt=0).order_by('-current_credit')
+    customers = Customer.objects.filter(current_credit__gt=0)
+    query = request.GET.get('q', '').strip()
+    filter_by = request.GET.get('filter_by', 'name')
+    sort_by = request.GET.get('sort_by', 'credit_desc')
+
+    if query:
+        if filter_by == 'phone':
+            customers = customers.filter(
+                Q(phone_number__icontains=query) |
+                Q(secondary_phone_number__icontains=query)
+            )
+        elif filter_by == 'email':
+            customers = customers.filter(email__icontains=query)
+        elif filter_by == 'credit':
+            try:
+                credit_value = float(query)
+                customers = customers.filter(current_credit=credit_value)
+            except ValueError:
+                customers = customers.none()
+        elif filter_by == 'all':
+            customers = customers.filter(
+                Q(customer_name__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(secondary_phone_number__icontains=query) |
+                Q(email__icontains=query) |
+                Q(city__icontains=query)
+            )
+        else:
+            customers = customers.filter(customer_name__icontains=query)
+
+    if sort_by == 'name_asc':
+        customers = customers.order_by('customer_name')
+    elif sort_by == 'name_desc':
+        customers = customers.order_by('-customer_name')
+    elif sort_by == 'credit_asc':
+        customers = customers.order_by('current_credit', 'customer_name')
+    else:
+        customers = customers.order_by('-current_credit', 'customer_name')
+
     return render(request, 'sales/credit_records.html', {
         'customers': customers,
+        'query': query,
+        'filter_by': filter_by,
+        'sort_by': sort_by,
     })
 
 @login_required
@@ -308,8 +379,61 @@ def sales_cancel(request, sale_number):
 
 @login_required
 def sales_return_list(request):
-    sales = Sale.objects.filter(order_status='returned').order_by('-sale_date')
-    return render(request, 'sales/returned_sales.html', {'sales': sales})
+    sales = Sale.objects.filter(order_status='returned')
+    query = request.GET.get('q', '').strip()
+    filter_by = request.GET.get('filter_by', 'customer')
+    sort_by = request.GET.get('sort_by', 'date_desc')
+
+    if query:
+        if filter_by == 'sale_number':
+            sales = sales.filter(sale_number__icontains=query)
+        elif filter_by == 'phone':
+            sales = sales.filter(
+                Q(customer__phone_number__icontains=query) |
+                Q(irregular_customer__phone_number__icontains=query)
+            )
+        elif filter_by == 'amount':
+            try:
+                amount_value = float(query)
+                sales = sales.filter(total_amount=amount_value)
+            except ValueError:
+                sales = sales.none()
+        elif filter_by == 'payment_method':
+            sales = sales.filter(payment_method__icontains=query)
+        elif filter_by == 'all':
+            sales = sales.filter(
+                Q(sale_number__icontains=query) |
+                Q(customer__customer_name__icontains=query) |
+                Q(irregular_customer__customer_name__icontains=query) |
+                Q(customer__phone_number__icontains=query) |
+                Q(irregular_customer__phone_number__icontains=query) |
+                Q(payment_method__icontains=query)
+            )
+        else:
+            sales = sales.filter(
+                Q(customer__customer_name__icontains=query) |
+                Q(irregular_customer__customer_name__icontains=query)
+            )
+
+    if sort_by == 'date_asc':
+        sales = sales.order_by('sale_date')
+    elif sort_by == 'customer_asc':
+        sales = sales.order_by('customer__customer_name', 'irregular_customer__customer_name', '-sale_date')
+    elif sort_by == 'customer_desc':
+        sales = sales.order_by('-customer__customer_name', '-irregular_customer__customer_name', '-sale_date')
+    elif sort_by == 'amount_asc':
+        sales = sales.order_by('total_amount', '-sale_date')
+    elif sort_by == 'amount_desc':
+        sales = sales.order_by('-total_amount', '-sale_date')
+    else:
+        sales = sales.order_by('-sale_date')
+
+    return render(request, 'sales/returned_sales.html', {
+        'sales': sales,
+        'query': query,
+        'filter_by': filter_by,
+        'sort_by': sort_by,
+    })
 
 
 @login_required

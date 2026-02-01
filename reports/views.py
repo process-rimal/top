@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.db.models import Sum, Count, Avg, F
+from django.db.models import Sum, Count, Avg, F, Q
 from django.utils import timezone
 from sales.models import Sale
 from inventory.models import Product, Inventory
@@ -27,6 +27,49 @@ def reports_dashboard(request):
         'today_sales': today_sales,
         'total_customers': total_customers,
         'low_stock_count': low_stock_count,
+    })
+
+@login_required
+def low_stock_report(request):
+    query = request.GET.get('q', '').strip()
+    search_by = request.GET.get('search_by', 'name')
+    sort_by = request.GET.get('sort_by', 'stock_asc')
+
+    low_stock_qs = Inventory.objects.select_related('product', 'product__category').filter(
+        quantity_in_stock__lte=F('product__reorder_level')
+    )
+
+    if query:
+        if search_by == 'sku':
+            low_stock_qs = low_stock_qs.filter(product__sku__icontains=query)
+        elif search_by == 'barcode':
+            low_stock_qs = low_stock_qs.filter(product__barcode__icontains=query)
+        elif search_by == 'category':
+            low_stock_qs = low_stock_qs.filter(product__category__name__icontains=query)
+        elif search_by == 'all':
+            low_stock_qs = low_stock_qs.filter(
+                Q(product__product_name__icontains=query) |
+                Q(product__sku__icontains=query) |
+                Q(product__barcode__icontains=query) |
+                Q(product__category__name__icontains=query)
+            )
+        else:
+            low_stock_qs = low_stock_qs.filter(product__product_name__icontains=query)
+
+    sort_map = {
+        'stock_asc': 'quantity_in_stock',
+        'stock_desc': '-quantity_in_stock',
+        'reorder_asc': 'product__reorder_level',
+        'reorder_desc': '-product__reorder_level',
+        'name': 'product__product_name',
+    }
+    low_stock_qs = low_stock_qs.order_by(sort_map.get(sort_by, 'quantity_in_stock'))
+
+    return render(request, 'reports/low_stock.html', {
+        'low_stock_items': low_stock_qs,
+        'query': query,
+        'search_by': search_by,
+        'sort_by': sort_by,
     })
 
 @login_required
