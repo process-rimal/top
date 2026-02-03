@@ -5,6 +5,7 @@ urlpatterns = [
     path('', views.reports_dashboard, name='reports_dashboard'),
     path('low-stock/', views.low_stock_report, name='low_stock_report'),
     path('sales/', views.sales_report, name='sales_report'),
+    path('sales/today/', views.today_sales_report, name='today_sales_report'),
     path('inventory/', views.inventory_report, name='inventory_report'),
     path('customers/', views.customer_report, name='customer_report'),
     path('vendors/', views.vendor_report, name='vendor_report'),

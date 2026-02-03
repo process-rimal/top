@@ -27,12 +27,14 @@
             </a>
         </div>
         <div class="col-md-3">
-            <div class="card text-white bg-success h-100">
-                <div class="card-body">
-                    <h6 class="card-title">Today's Sales</h6>
-                    <h2>Rs.{{ today_sales }}</h2>
+            <a href="{% url 'today_sales_report' %}" class="text-decoration-none">
+                <div class="card text-white bg-success h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Today's Sales</h6>
+                        <h2>Rs.{{ today_sales }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
             <a href="/customers/" class="text-decoration-none">

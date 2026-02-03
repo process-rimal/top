@@ -140,14 +140,6 @@
 
             <div class="row mt-4">
                 <div class="col-md-6">
-                    <label class="form-label">Payment Type</label>
-                    <select id="payment-type" class="form-select">
-                        <option value="full" selected>Full Payment</option>
-                        <option value="partial">Partial Payment</option>
-                        <option value="credit">Credit</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
                     <label class="form-label">Payment Method</label>
                     <select id="payment-method" class="form-select">
                         <option value="cash" selected>Cash</option>
@@ -276,8 +268,8 @@ function recalcGrandTotal() {
     });
     document.getElementById('grand-total').textContent = `Rs. ${total.toFixed(2)}`;
     const paidInput = document.getElementById('paid-amount');
-    const paymentType = document.getElementById('payment-type')?.value;
-    if (paidInput && !paidInput.dataset.touched && paymentType === 'full') {
+    const methodSelect = document.getElementById('payment-method');
+    if (paidInput && methodSelect && !paidInput.dataset.touched && methodSelect.value !== 'credit') {
         paidInput.value = total.toFixed(2);
     }
 }
@@ -392,45 +384,34 @@ document.getElementById('paid-amount').addEventListener('input', (e) => {
     e.target.dataset.touched = 'true';
 });
 
-function syncPaymentControls() {
-    const paymentType = document.getElementById('payment-type').value;
+function syncPaymentMethodControls() {
     const methodSelect = document.getElementById('payment-method');
     const paidInput = document.getElementById('paid-amount');
     const qrWrapper = document.getElementById('card-qr-wrapper');
+    if (!methodSelect || !paidInput) {
+        return;
+    }
 
-    if (paymentType === 'credit') {
-        methodSelect.value = 'credit';
-        methodSelect.disabled = true;
+    if (methodSelect.value === 'credit') {
         paidInput.value = 0;
         paidInput.disabled = true;
         paidInput.dataset.touched = 'true';
         qrWrapper?.classList.add('d-none');
-        return;
-    }
-
-    methodSelect.disabled = false;
-    paidInput.disabled = false;
-
-    if (paymentType === 'full') {
-        paidInput.dataset.touched = '';
-        recalcGrandTotal();
+    } else {
+        paidInput.disabled = false;
+        if (!paidInput.dataset.touched) {
+            recalcGrandTotal();
+        }
+        if (methodSelect.value === 'card') {
+            qrWrapper?.classList.remove('d-none');
+        } else {
+            qrWrapper?.classList.add('d-none');
+        }
     }
 }
 
-document.getElementById('payment-type').addEventListener('change', () => {
-    syncPaymentControls();
-});
-
-document.getElementById('payment-method').addEventListener('change', (e) => {
-    const qrWrapper = document.getElementById('card-qr-wrapper');
-    if (!qrWrapper) {
-        return;
-    }
-    if (e.target.value === 'card') {
-        qrWrapper.classList.remove('d-none');
-    } else {
-        qrWrapper.classList.add('d-none');
-    }
+document.getElementById('payment-method').addEventListener('change', () => {
+    syncPaymentMethodControls();
 });
 
 document.getElementById('confirm-sale').addEventListener('click', async (e) => {
@@ -460,9 +441,8 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
     const subtotal = items.reduce((sum, i) => sum + i.line_total, 0);
     const tax = 0;
     const total = subtotal + tax;
-    const paymentType = document.getElementById('payment-type').value;
     const paymentMethod = document.getElementById('payment-method').value;
-    const paidAmount = paymentType === 'credit'
+    const paidAmount = paymentMethod === 'credit'
         ? 0
         : parseFloat(document.getElementById('paid-amount').value || '0');
 
@@ -483,7 +463,7 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
         tax,
         total,
         paid_amount: paidAmount,
-        payment_method: paymentType === 'credit' ? 'credit' : paymentMethod,
+        payment_method: paymentMethod,
     };
 
     const response = await fetch('/sales/api/create-sale/', {
@@ -504,7 +484,7 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
     }
 });
 
-syncPaymentControls();
+syncPaymentMethodControls();
 
 function getCookie(name) {
     let cookieValue = null;

@@ -84,6 +84,19 @@ def sales_report(request):
     })
 
 @login_required
+def today_sales_report(request):
+    today = timezone.localdate()
+    sales = Sale.objects.select_related('customer', 'irregular_customer').filter(
+        sale_date__date=today
+    ).order_by('-sale_date')
+    total_sales = sales.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    return render(request, 'reports/today_sales.html', {
+        'sales': sales,
+        'total_sales': total_sales,
+        'today': today,
+    })
+
+@login_required
 def inventory_report(request):
     products = Product.objects.all()
     return render(request, 'reports/inventory_report.html', {'products': products})

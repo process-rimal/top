@@ -14,6 +14,31 @@ from .utils import generate_receipt_pdf, number_to_words
 from decimal import Decimal
 import json
 
+def _ensure_credit_transaction(sale, created_by=None):
+    if not sale.customer:
+        return
+    due_amount = sale.total_amount - sale.paid_amount
+    if due_amount <= 0:
+        return
+    from customers.models import CreditTransaction
+    exists = CreditTransaction.objects.filter(
+        related_sale=sale,
+        transaction_type='purchase'
+    ).exists()
+    if exists:
+        return
+    sale.customer.current_credit += due_amount
+    sale.customer.save()
+    CreditTransaction.objects.create(
+        customer=sale.customer,
+        transaction_type='purchase',
+        amount=due_amount,
+        balance_after=sale.customer.current_credit,
+        related_sale=sale,
+        description='Sale on credit',
+        created_by=created_by,
+    )
+
 @login_required
 def sales_home(request):
     return render(request, 'sales/sales_home.html')
@@ -125,19 +150,7 @@ def create_sale_api(request):
             inventory.quantity_in_stock -= int(item['quantity'])
             inventory.save()
         
-        if customer:
-            from customers.models import CreditTransaction
-            due_amount = total_amount - paid_amount
-            if due_amount > 0:
-                customer.current_credit += due_amount
-                customer.save()
-                CreditTransaction.objects.create(
-                    customer=customer,
-                    transaction_type='purchase',
-                    amount=due_amount,
-                    balance_after=customer.current_credit,
-                    related_sale=sale,
-                )
+        _ensure_credit_transaction(sale, getattr(request.user, 'profile', None))
         
         return JsonResponse({
             'success': True,
@@ -472,6 +485,7 @@ def sales_edit(request, sale_number):
         sale.notes = request.POST.get('notes', '')
         sale.payment_status = 'paid' if sale.paid_amount >= sale.total_amount else 'partial'
         sale.save()
+        _ensure_credit_transaction(sale, getattr(request.user, 'profile', None))
         messages.success(request, 'Sale updated successfully.')
         return redirect('sales_list')
     return render(request, 'sales/sales_edit.html', {'sale': sale})

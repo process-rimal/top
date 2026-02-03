@@ -238,47 +238,6 @@
 </html>
 
 
-# templates/accounts/login.html - Login Template
-
-{% extends 'base.html' %}
-
-{% block title %}Login - Shop Management System{% endblock %}
-
-{% block content %}
-<div class="container" style="max-width: 400px; margin-top: 100px;">
-    <div class="card">
-        <div class="card-body p-5">
-            <h2 class="text-center mb-4">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </h2>
-            
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label for="id_username" class="form-label">Username</label>
-                    <input type="text" name="username" id="id_username" class="form-control" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="id_password" class="form-label">Password</label>
-                    <input type="password" name="password" id="id_password" class="form-control" required>
-                </div>
-                
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-            </form>
-            
-            <hr>
-            
-            <p class="text-center">
-                Don't have an account? <a href="{% url 'register' %}">Register here</a>
-            </p>
-        </div>
-    </div>
-</div>
-{% endblock %}
 
 
 # templates/accounts/dashboard.html - Dashboard Template

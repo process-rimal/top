@@ -46,6 +46,28 @@
         </div>
     </div>
 
+    <div class="card mb-4" id="pay-credit">
+        <div class="card-header">
+            <h5 class="mb-0">Receive Payment</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/customers/{{ customer.phone_number }}/pay/" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-4">
+                    <label class="form-label">Amount</label>
+                    <input type="number" name="amount" step="0.01" min="0" max="{{ customer.current_credit }}" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Description (optional)</label>
+                    <input type="text" name="description" class="form-control" placeholder="Payment received">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="mb-0">Sales History</h5>
@@ -75,7 +97,7 @@
                             <td>{{ sale.payment_status }}</td>
                             <td>{{ sale.payment_method }}</td>
                             <td>
-                                <a href="/sales/receipt/{{ sale.sale_number }}/pdf/" class="btn btn-sm btn-outline-primary">View</a>
+                                <a href="/sales/receipt/{{ sale.sale_number }}/" class="btn btn-sm btn-outline-primary">View</a>
                                 <a href="/sales/receipt/{{ sale.sale_number }}/pdf/?download=1" class="btn btn-sm btn-outline-secondary">Download</a>
                             </td>
                         </tr>
@@ -105,13 +127,14 @@
                             <th>Balance After</th>
                             <th>Description</th>
                             <th>Related Sale</th>
+                            <th>Receipt</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for tx in credit_transactions %}
                         <tr>
                             <td>{{ tx.transaction_date|date:"Y-m-d H:i" }}</td>
-                            <td>{{ tx.transaction_type }}</td>
+                            <td>{{ tx.get_transaction_type_display }}</td>
                             <td>Rs. {{ tx.amount }}</td>
                             <td>Rs. {{ tx.balance_after }}</td>
                             <td>{{ tx.description|default:"—" }}</td>
@@ -119,9 +142,16 @@
                                 {% if tx.related_sale %}
                                     <div class="d-flex gap-2 align-items-center">
                                         <span>{{ tx.related_sale.sale_number }}</span>
-                                        <a href="/sales/receipt/{{ tx.related_sale.sale_number }}/pdf/" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="/sales/receipt/{{ tx.related_sale.sale_number }}/" class="btn btn-sm btn-outline-primary">View</a>
                                         <a href="/sales/receipt/{{ tx.related_sale.sale_number }}/pdf/?download=1" class="btn btn-sm btn-outline-secondary">Download</a>
                                     </div>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tx.transaction_type == 'payment' %}
+                                    <a href="/customers/credit/receipt/{{ tx.id }}/" class="btn btn-sm btn-outline-success">View</a>
                                 {% else %}
                                     —
                                 {% endif %}

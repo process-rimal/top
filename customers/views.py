@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
+from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Customer, CreditTransaction, IrregularCustomer
 from sales.models import Sale
+from decimal import Decimal, InvalidOperation
 
 @login_required
 def customer_list(request):
@@ -149,3 +151,49 @@ def customer_credit_history(request, phone):
         'customer': customer,
         'transactions': transactions
     })
+
+@login_required
+def customer_payment_receipt(request, tx_id):
+    tx = get_object_or_404(CreditTransaction, id=tx_id, transaction_type='payment')
+    return render(request, 'customers/payment_receipt.html', {
+        'customer': tx.customer,
+        'tx': tx,
+    })
+
+@login_required
+@transaction.atomic
+def customer_pay_credit(request, phone):
+    customer = get_object_or_404(Customer, phone_number=phone)
+    if request.method != 'POST':
+        return redirect('customer_detail', phone=phone)
+
+    amount_raw = (request.POST.get('amount') or '').strip()
+    description = (request.POST.get('description') or '').strip()
+    try:
+        amount = Decimal(amount_raw)
+    except (InvalidOperation, TypeError):
+        messages.error(request, 'Enter a valid payment amount.')
+        return redirect('customer_detail', phone=phone)
+
+    if amount <= 0:
+        messages.error(request, 'Payment amount must be greater than zero.')
+        return redirect('customer_detail', phone=phone)
+
+    if amount > customer.current_credit:
+        messages.error(request, 'Payment exceeds current credit balance.')
+        return redirect('customer_detail', phone=phone)
+
+    customer.current_credit = customer.current_credit - amount
+    customer.save()
+
+    CreditTransaction.objects.create(
+        customer=customer,
+        transaction_type='payment',
+        amount=amount,
+        balance_after=customer.current_credit,
+        description=description or 'Payment received',
+        created_by=getattr(request.user, 'profile', None),
+    )
+
+    messages.success(request, 'Payment recorded successfully.')
+    return redirect('customer_detail', phone=phone)

@@ -1,20 +1,20 @@
-20{% extends "admin/base.html" %}
+{% extends "admin/base.html" %}
 {% load i18n %}
 
 {% block extrastyle %}
 {{ block.super }}
 <style>
     :root {
-        --admin-bg: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 40%, #f1f5f9 100%);
+        --admin-bg: linear-gradient(135deg, #4c1d95 0%, #7c3aed 35%, #be123c 100%);
         --admin-card: #ffffff;
-        --admin-border: #e2e8f0;
-        --admin-primary: #6366f1;
-        --admin-primary-dark: #4f46e5;
+        --admin-border: #e5e7eb;
+        --admin-primary: #2563eb;
+        --admin-primary-dark: #1d4ed8;
         --admin-secondary: #0ea5e9;
-        --admin-text: #0f172a;
-        --admin-muted: #64748b;
-        --admin-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
-        --admin-radius: 16px;
+        --admin-text: #111827;
+        --admin-muted: #6b7280;
+        --admin-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+        --admin-radius: 12px;
     }
 
     body, #container {
@@ -24,10 +24,11 @@
     }
 
     #header {
-        background: linear-gradient(135deg, #111827 0%, #1e293b 45%, #312e81 100%);
+        background: linear-gradient(135deg, #111827 0%, #1f2937 45%, #312e81 100%);
         color: #fff;
         border-bottom: none;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.28);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+        padding: 12px 28px;
     }
 
     #header #branding {
@@ -50,6 +51,7 @@
         font-weight: 700;
         letter-spacing: 0.3px;
         font-size: 1.4rem;
+        color: #ef4444;
     }
 
     #user-tools {
@@ -58,7 +60,7 @@
     }
 
     #content {
-        padding: 28px;
+        padding: 24px 28px;
     }
 
     .module, .dashboard #content-main .module, .inline-group {
@@ -66,7 +68,6 @@
         border: 1px solid var(--admin-border);
         border-radius: var(--admin-radius);
         box-shadow: var(--admin-shadow);
-        backdrop-filter: blur(6px);
     }
 
     .module h2, .module caption, .dashboard-module h2 {
@@ -135,7 +136,7 @@
     }
 
     .navbar {
-        margin: 0 0 16px 0;
+        margin: 0 0 18px 0;
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
@@ -146,17 +147,17 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0;
-        background: rgba(15, 23, 42, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(49, 46, 129, 0.9));
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
         padding: 6px;
-        backdrop-filter: blur(8px);
+        box-shadow: var(--admin-shadow);
     }
 
     .nav-group-title {
-        color: #e2e8f0;
+        color: rgba(255, 255, 255, 0.78);
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.78rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
         margin-right: 10px;
@@ -166,13 +167,58 @@
 
     .nav-group a.button {
         background: transparent;
-        border-radius: 10px;
-        padding: 8px 12px;
-        color: #e2e8f0;
+        border-radius: 999px;
+        padding: 6px 12px;
+        color: #ffffff;
+        font-weight: 600;
+        transition: background 0.15s ease, transform 0.15s ease;
     }
 
     .nav-group a.button:hover {
         background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-1px);
+    }
+
+    #nav-sidebar {
+        background: #ffffff;
+        border-right: 1px solid var(--admin-border);
+    }
+
+    #nav-sidebar .module {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    #nav-sidebar .app-name,
+    #nav-sidebar .current-app .app-name,
+    #nav-sidebar .app-label,
+    #nav-sidebar .app-label a,
+    #nav-sidebar .section > h3,
+    #nav-sidebar .module h2,
+    #nav-sidebar .module caption {
+        color: #ef4444 !important;
+        font-weight: 700;
+    }
+
+    #nav-sidebar a {
+        color: #0f172a;
+        border-radius: 10px;
+        padding: 6px 10px;
+        margin: 2px 8px;
+        display: block;
+    }
+
+    #nav-sidebar a:hover {
+        background: rgba(255, 255, 255, 0.24);
+        color: #0b1220;
+    }
+
+    #nav-sidebar .current-model a,
+    #nav-sidebar .current-app .current-model a {
+        background: rgba(255, 255, 255, 0.28);
+        color: #0b1220;
+        font-weight: 700;
     }
 
     .navbar a.button {
