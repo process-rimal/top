@@ -67,6 +67,25 @@ def _handle_login(request, template_name, allow_superadmin=False, allow_vendor_o
                     request.session['tenant_id'] = tenant.id
                     request.session['tenant_alias'] = db_alias
                     return redirect('dashboard')
+
+                if not user and tenant.admin_user.check_password(password):
+                    tenant_admin = UserModel._default_manager.db_manager(db_alias).create_user(
+                        username=lookup_email,
+                        email=lookup_email,
+                        password=password,
+                        is_staff=True,
+                        is_superuser=True,
+                    )
+                    UserProfile.objects.using(db_alias).get_or_create(
+                        user=tenant_admin,
+                        defaults={'role': 'tenant_admin', 'tenant_id': tenant.id},
+                    )
+                    set_current_tenant(None, None)
+                    tenant_admin.backend = 'tenants.auth_backends.TenantModelBackend'
+                    login(request, tenant_admin)
+                    request.session['tenant_id'] = tenant.id
+                    request.session['tenant_alias'] = db_alias
+                    return redirect('dashboard')
             finally:
                 set_current_tenant(None, None)
         

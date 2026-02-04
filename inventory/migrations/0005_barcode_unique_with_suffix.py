@@ -5,21 +5,22 @@ from django.db import migrations, models
 
 def dedupe_barcodes(apps, schema_editor):
     Product = apps.get_model("inventory", "Product")
+    db_alias = schema_editor.connection.alias
     seen = set()
-    for product in Product.objects.exclude(barcode__isnull=True).exclude(barcode="").order_by("id"):
+    for product in Product.objects.using(db_alias).exclude(barcode__isnull=True).exclude(barcode="").order_by("id"):
         barcode = product.barcode.strip()
         if barcode not in seen:
             seen.add(barcode)
             if barcode != product.barcode:
                 product.barcode = barcode
-                product.save(update_fields=["barcode"])
+                product.save(update_fields=["barcode"], using=db_alias)
             continue
         counter = 1
         while True:
             candidate = f"{barcode}({counter})"
-            if candidate not in seen and not Product.objects.filter(barcode=candidate).exists():
+            if candidate not in seen and not Product.objects.using(db_alias).filter(barcode=candidate).exists():
                 product.barcode = candidate
-                product.save(update_fields=["barcode"])
+                product.save(update_fields=["barcode"], using=db_alias)
                 seen.add(candidate)
                 break
             counter += 1

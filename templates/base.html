@@ -248,10 +248,15 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/inventory/">Inventory</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/sales/">Sales</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/reports/">Reports</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/customers/">Customers</a></li>
+                    {% if user.is_authenticated and user.profile.role == 'superadmin' %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'superadmin_dashboard' %}">Vendors</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'reports_dashboard' %}">Reports</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="/inventory/">Inventory</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/sales/">Sales</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/">Reports</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/customers/">Customers</a></li>
+                    {% endif %}
                     {% if user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="/accounts/logout/">Logout</a></li>
                     {% else %}

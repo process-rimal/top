@@ -6,9 +6,29 @@ from django.utils import timezone
 from sales.models import Sale
 from inventory.models import Product, Inventory
 from customers.models import Customer
+from tenants.models import Tenant
 
 @login_required
 def reports_dashboard(request):
+    is_superadmin = False
+    try:
+        is_superadmin = request.user.profile.role == 'superadmin'
+    except Exception:
+        is_superadmin = False
+
+    if is_superadmin:
+        vendors = Tenant.objects.using('default').all().order_by('-created_at')
+        total_vendors = vendors.count()
+        active_vendors = vendors.filter(is_active=True).count()
+        inactive_vendors = vendors.filter(is_active=False).count()
+        return render(request, 'reports/dashboard.html', {
+            'is_superadmin': True,
+            'vendors': vendors,
+            'total_vendors': total_vendors,
+            'active_vendors': active_vendors,
+            'inactive_vendors': inactive_vendors,
+        })
+
     total_products = Product.objects.count()
     total_customers = Customer.objects.count()
     today = timezone.localdate()
@@ -22,6 +42,7 @@ def reports_dashboard(request):
     ).count()
 
     return render(request, 'reports/dashboard.html', {
+        'is_superadmin': False,
         'total_products': total_products,
         'today_sales': today_sales,
         'total_customers': total_customers,

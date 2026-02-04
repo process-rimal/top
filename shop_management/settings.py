@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'accounts',
-    'tenants',
+    'tenants.apps.TenantsConfig',
     'inventory',
     'customers',
     'sales',

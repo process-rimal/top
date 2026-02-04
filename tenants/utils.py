@@ -71,6 +71,13 @@ def provision_tenant_database(tenant):
     return
 
 
+def delete_tenant_database(tenant):
+    db_config = build_tenant_db_config(tenant)
+    db_path = db_config.get('NAME')
+    if db_path and os.path.exists(db_path):
+        os.remove(db_path)
+
+
 def migrate_tenant_database(tenant):
     alias = ensure_tenant_db(tenant)
     call_command('migrate', database=alias, interactive=False)

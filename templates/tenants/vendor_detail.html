@@ -110,8 +110,11 @@
                 <div class="card-body">
                     <a href="{% url 'reset_vendor_password' vendor.id %}" class="btn btn-warning btn-block mb-2">Reset Admin Password</a>
                     <a href="{% url 'superadmin_login_as_vendor' vendor.id %}" class="btn btn-info btn-block mb-2">View as Admin</a>
+                    <a href="{% url 'delete_vendor' vendor.id %}" class="btn btn-outline-danger btn-block mb-2">Delete Vendor</a>
                     {% if vendor.is_active %}
                     <a href="{% url 'deactivate_vendor' vendor.id %}" class="btn btn-danger btn-block">Deactivate Vendor</a>
+                    {% else %}
+                    <a href="{% url 'activate_vendor' vendor.id %}" class="btn btn-success btn-block">Activate Vendor</a>
                     {% endif %}
                 </div>
             </div>

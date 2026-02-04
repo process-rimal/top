@@ -40,6 +40,10 @@
                     </a>
                 </div>
             </div>
+
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{% url 'superadmin_change_password' %}" class="btn btn-outline-secondary">Change Password</a>
+            </div>
             
             <div class="card">
                 <div class="card-header">
@@ -75,6 +79,12 @@
                                 <td>
                                     <a href="{% url 'vendor_detail' vendor.id %}" class="btn btn-sm btn-info">View</a>
                                     <a href="{% url 'superadmin_login_as_vendor' vendor.id %}" class="btn btn-sm btn-warning">Login as</a>
+                                    <a href="{% url 'delete_vendor' vendor.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                    {% if vendor.is_active %}
+                                    <a href="{% url 'deactivate_vendor' vendor.id %}" class="btn btn-sm btn-danger">Deactivate</a>
+                                    {% else %}
+                                    <a href="{% url 'activate_vendor' vendor.id %}" class="btn btn-sm btn-success">Activate</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

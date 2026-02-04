@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='sales/pos/', permanent=False)),
+    path('', RedirectView.as_view(url='accounts/login/', permanent=False)),
     path('accounts/', include('accounts.urls')),
     path('tenants/', include('tenants.urls')),
     path('api/', include('api.urls')),

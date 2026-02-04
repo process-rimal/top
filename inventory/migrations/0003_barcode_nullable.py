@@ -3,7 +3,8 @@ from django.db import migrations, models
 
 def normalize_empty_barcodes(apps, schema_editor):
     Product = apps.get_model('inventory', 'Product')
-    Product.objects.filter(barcode='').update(barcode=None)
+    db_alias = schema_editor.connection.alias
+    Product.objects.using(db_alias).filter(barcode='').update(barcode=None)
 
 
 class Migration(migrations.Migration):
