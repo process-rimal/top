@@ -77,12 +77,6 @@
                             <th class="text-end">- Rs. {{ sale.discount }}</th>
                         </tr>
                         {% endif %}
-                        {% if sale.tax and sale.tax > 0 %}
-                        <tr>
-                            <th colspan="3" class="text-end">VAT</th>
-                            <th class="text-end">Rs. {{ sale.tax }}</th>
-                        </tr>
-                        {% endif %}
                         <tr>
                             <th colspan="3" class="text-end">Total</th>
                             <th class="text-end">Rs. {{ sale.total_amount }}</th>
@@ -90,6 +84,10 @@
                         <tr>
                             <th colspan="3" class="text-end">Paid</th>
                             <th class="text-end">Rs. {{ sale.paid_amount }}</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end">Return Amount</th>
+                            <th class="text-end">Rs. {{ change_due }}</th>
                         </tr>
                     </tfoot>
                 </table>

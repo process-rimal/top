@@ -221,7 +221,6 @@ django-admin startproject shop_management .
 # Create individual apps
 python manage.py startapp accounts
 python manage.py startapp inventory
-python manage.py startapp vendors
 python manage.py startapp customers
 python manage.py startapp sales
 python manage.py startapp reports
@@ -240,7 +239,6 @@ shop_management/
 │   └── asgi.py
 ├── accounts/                # App folders
 ├── inventory/
-├── vendors/
 ├── customers/
 ├── sales/
 ├── reports/
@@ -315,135 +313,14 @@ EXIT;
 
 ---
 
-## PART 5: COPY ALL SOURCE CODE FILES (15 MINUTES)
+## PART 5: CONFIRM SOURCE CODE IS PRESENT (2 MINUTES)
 
-### Step 1: Copy Model Files
+All source files are already included in this repository. You do not need to copy any code or templates from separate files.
 
-From the file `models_complete.py`, copy each section:
-
-**accounts/models.py:**
-- Copy everything from `# accounts/models.py` to before `# ========`
-- Paste into your `accounts/models.py` file
-- Delete any default Django content
-
-**inventory/models.py:**
-- Copy everything from `# inventory/models.py` section
-- Paste into your `inventory/models.py` file
-
-**vendors/models.py:**
-- Copy everything from `# vendors/models.py` section
-- Paste into your `vendors/models.py` file
-
-**customers/models.py:**
-- Copy everything from `# customers/models.py` section
-- Paste into your `customers/models.py` file
-
-**sales/models.py:**
-- Copy everything from `# sales/models.py` section
-- Paste into your `sales/models.py` file
-
-### Step 2: Copy Settings File
-
-**shop_management/settings.py:**
-1. Open the file `settings_configuration.py`
-2. Copy ALL content
-3. Open your `shop_management/settings.py`
-4. Delete all existing content
-5. Paste the new content
-
-### Step 3: Copy URLs Configuration
-
-From `urls_and_views.py`:
-
-**shop_management/urls.py:**
-- Copy from `# shop_management/urls.py` to first `# ========`
-- Paste into your `shop_management/urls.py`
-
-**accounts/urls.py:**
-- Copy from `# accounts/urls.py` section
-- Create file if not exists: `accounts/urls.py`
-- Paste content
-
-**inventory/urls.py:**
-- Copy from `# inventory/urls.py` section
-- Create file: `inventory/urls.py`
-- Paste content
-
-**vendors/urls.py:**
-- Copy from `# vendors/urls.py` section
-- Create file: `vendors/urls.py`
-- Paste content
-
-**customers/urls.py:**
-- Copy from `# customers/urls.py` section
-- Create file: `customers/urls.py`
-- Paste content
-
-**sales/urls.py:**
-- Copy from `# sales/urls.py` section
-- Create file: `sales/urls.py`
-- Paste content
-
-**reports/urls.py:**
-- Copy from `# reports/urls.py` section
-- Create file: `reports/urls.py`
-- Paste content
-
-### Step 4: Copy Views
-
-**accounts/views.py:**
-- Copy from `# accounts/views.py` section in `urls_and_views.py`
-- Paste into `accounts/views.py`
-
-**inventory/views.py:**
-- Copy from `# inventory/views.py` section in `urls_and_views.py`
-- Paste into `inventory/views.py`
-
-**sales/views.py:**
-- Copy from `# sales/views.py` section in `sales_utils_and_views.py`
-- Paste into `sales/views.py`
-
-**sales/utils.py:**
-- Copy from `# sales/utils.py` section in `sales_utils_and_views.py`
-- Create new file: `sales/utils.py`
-- Paste content
-
-### Step 5: Create Templates Folder
-
-```bash
-# From your project root (shop_management folder)
-mkdir templates
-mkdir templates/accounts
-mkdir templates/inventory
-mkdir templates/vendors
-mkdir templates/customers
-mkdir templates/sales
-mkdir templates/reports
-```
-
-**Copy HTML Templates:**
-
-From `templates_examples.html`:
-
-**templates/base.html:**
-- Copy from `# templates/base.html` to first `# ========`
-- Create file: `templates/base.html`
-- Paste content
-
-**templates/accounts/login.html:**
-- Copy from `# templates/accounts/login.html` to first `# ========`
-- Create file: `templates/accounts/login.html`
-- Paste content
-
-**templates/accounts/dashboard.html:**
-- Copy from `# templates/accounts/dashboard.html` to first `# ========`
-- Create file: `templates/accounts/dashboard.html`
-- Paste content
-
-**templates/sales/pos.html:**
-- Copy from `# templates/sales/pos.html` section
-- Create file: `templates/sales/pos.html`
-- Paste content
+Quick sanity check:
+- Django apps exist under accounts, inventory, customers, sales, and reports.
+- Project settings and routing exist under shop_management.
+- Templates exist under templates.
 
 ---
 
@@ -464,7 +341,6 @@ python manage.py makemigrations
 # Creating migrations for:
 # - accounts
 # - inventory
-# - vendors
 # - customers
 # - sales
 

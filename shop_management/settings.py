@@ -32,20 +32,24 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'django_filters',
+    'rest_framework',
     
     # Local apps
     'accounts',
+    'tenants',
     'inventory',
-    'vendors',
     'customers',
     'sales',
     'reports',
+    'api',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'tenants.middleware.TenantMiddleware',
+    'tenants.middleware.TenantAccessMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,28 +77,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'shop_management.wsgi.application'
 
-# Database Configuration - SQLite for development, MySQL for production
-if os.getenv('USE_MYSQL', 'False') == 'True':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'mysql.connector.django',
-            'NAME': os.getenv('DB_NAME', 'shop_management'),
-            'USER': os.getenv('DB_USER', 'shop_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-            'PORT': os.getenv('DB_PORT', '3306'),
-            'CHARSET': 'utf8mb4',
-            'COLLATION': 'utf8mb4_unicode_ci',
-        }
+# Database Configuration - SQLite (legacy)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # SQLite for development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
+
+DATABASE_ROUTERS = ['tenants.db_router.TenantDatabaseRouter']
+
+AUTHENTICATION_BACKENDS = [
+    'tenants.auth_backends.TenantModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -139,6 +135,17 @@ LOGIN_REDIRECT_URL = 'dashboard'
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
 # Session settings
 SESSION_COOKIE_AGE = 3600  # 1 hour
 SESSION_SAVE_EVERY_REQUEST = True
@@ -174,3 +181,6 @@ VAT_PERCENT = 13
 # Currency
 CURRENCY_SYMBOL = 'Rs.'
 CURRENCY_CODE = 'NPR'
+
+# Tenant routing (optional)
+TENANT_DOMAIN = os.getenv('TENANT_DOMAIN', '').strip()

@@ -4,7 +4,7 @@
 {% block title %}POS - Point of Sale{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4" id="pos-root">
     <div class="section-banner d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
             <h2>🛒 Point of Sale</h2>
@@ -77,6 +77,8 @@
         </div>
     </div>
 
+    <div id="pos-message" class="alert d-none" role="alert"></div>
+
     <!-- Products Table -->
     <div class="card">
         <div class="card-header">
@@ -126,7 +128,13 @@
                                 </datalist>
                             </td>
                             <td><input class="form-control price-input" readonly></td>
-                            <td><input type="number" class="form-control qty-input" min="1" value="1"></td>
+                            <td>
+                                <div class="input-group input-group-sm">
+                                    <button class="btn btn-outline-secondary qty-minus" type="button">-</button>
+                                    <input type="number" class="form-control qty-input" min="1" value="1">
+                                    <button class="btn btn-outline-secondary qty-plus" type="button">+</button>
+                                </div>
+                            </td>
                             <td><input class="form-control total-input" readonly></td>
                             <td><button class="btn btn-sm btn-danger remove-row">×</button></td>
                         </tr>
@@ -154,12 +162,34 @@
                 <div class="col-md-6 mt-3 mt-md-0">
                     <label class="form-label">Paid Amount</label>
                     <input id="paid-amount" type="number" class="form-control" value="0">
+                    <small class="text-muted d-block mt-2">Change Due: <span id="change-amount">Rs. 0.00</span></small>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <h5 class="mb-0">Grand Total: <span id="grand-total">Rs. 0.00</span></h5>
-                <button id="confirm-sale" class="btn btn-success">Confirm Payment</button>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card p-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Subtotal</span>
+                            <strong id="subtotal-amount">Rs. 0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted">Discount</span>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input id="discount-amount" type="number" class="form-control form-control-sm" style="max-width: 120px;" placeholder="0">
+                                <input id="discount-percent" type="number" class="form-control form-control-sm" style="max-width: 90px;" placeholder="%">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Grand Total</span>
+                            <strong id="grand-total">Rs. 0.00</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex align-items-end justify-content-end mt-3 mt-md-0">
+                    <button id="confirm-sale" class="btn btn-success btn-lg">Confirm Payment</button>
+                </div>
             </div>
         </div>
     </div>
@@ -262,20 +292,44 @@ function recalcRow(row) {
 }
 
 function recalcGrandTotal() {
-    let total = 0;
+    let subtotal = 0;
     document.querySelectorAll('.total-input').forEach(input => {
-        total += parseFloat(input.value || '0');
+        subtotal += parseFloat(input.value || '0');
     });
+    const discountAmountInput = document.getElementById('discount-amount');
+    const discountPercentInput = document.getElementById('discount-percent');
+    let discountAmount = parseFloat(discountAmountInput.value || '0');
+    const discountPercent = parseFloat(discountPercentInput.value || '0');
+    if (discountPercent > 0) {
+        discountAmount = (subtotal * discountPercent) / 100;
+        discountAmountInput.value = discountAmount.toFixed(2);
+    }
+    const taxable = Math.max(subtotal - discountAmount, 0);
+    const total = taxable;
+
+    document.getElementById('subtotal-amount').textContent = `Rs. ${subtotal.toFixed(2)}`;
     document.getElementById('grand-total').textContent = `Rs. ${total.toFixed(2)}`;
+
     const paidInput = document.getElementById('paid-amount');
     const methodSelect = document.getElementById('payment-method');
     if (paidInput && methodSelect && !paidInput.dataset.touched && methodSelect.value !== 'credit') {
         paidInput.value = total.toFixed(2);
     }
+    const paidValue = parseFloat(paidInput.value || '0');
+    const changeDue = Math.max(paidValue - total, 0);
+    document.getElementById('change-amount').textContent = `Rs. ${changeDue.toFixed(2)}`;
 }
 
 function addProductToPos(product) {
     const rows = Array.from(document.querySelectorAll('#pos-body tr'));
+    const existingRow = rows.find(row => row.querySelector('.product-input').value.trim().toLowerCase() === product.name.toLowerCase());
+    if (existingRow) {
+        const qtyField = existingRow.querySelector('.qty-input');
+        qtyField.value = Math.max(1, parseInt(qtyField.value || '1', 10) + 1);
+        recalcRow(existingRow);
+        recalcGrandTotal();
+        return;
+    }
     let targetRow = rows.find(row => !row.querySelector('.product-input').value.trim());
     if (!targetRow) {
         const tbody = document.getElementById('pos-body');
@@ -300,6 +354,18 @@ function attachRowEvents(row) {
         recalcGrandTotal();
     });
     row.querySelector('.qty-input').addEventListener('input', () => {
+        recalcRow(row);
+        recalcGrandTotal();
+    });
+    row.querySelector('.qty-plus').addEventListener('click', () => {
+        const qtyField = row.querySelector('.qty-input');
+        qtyField.value = Math.max(1, parseInt(qtyField.value || '1', 10) + 1);
+        recalcRow(row);
+        recalcGrandTotal();
+    });
+    row.querySelector('.qty-minus').addEventListener('click', () => {
+        const qtyField = row.querySelector('.qty-input');
+        qtyField.value = Math.max(1, parseInt(qtyField.value || '1', 10) - 1);
         recalcRow(row);
         recalcGrandTotal();
     });
@@ -341,7 +407,7 @@ if (barcodeInput) {
             addProductToPos(product);
             barcodeInput.value = '';
         } else {
-            alert('No product found for that barcode.');
+            showMessage('No product found for that barcode.', 'warning');
         }
     });
 }
@@ -358,7 +424,7 @@ if (barcodeProductInput) {
             addProductToPos(product);
             barcodeProductInput.value = '';
         } else {
-            alert('No product found with that name.');
+            showMessage('No product found with that name.', 'warning');
         }
     };
     barcodeProductInput.addEventListener('change', addByName);
@@ -380,8 +446,18 @@ document.getElementById('add-row').addEventListener('click', (e) => {
     tbody.appendChild(newRow);
 });
 
+document.getElementById('discount-amount').addEventListener('input', () => {
+    document.getElementById('discount-percent').value = '';
+    recalcGrandTotal();
+});
+
+document.getElementById('discount-percent').addEventListener('input', () => {
+    recalcGrandTotal();
+});
+
 document.getElementById('paid-amount').addEventListener('input', (e) => {
     e.target.dataset.touched = 'true';
+    recalcGrandTotal();
 });
 
 function syncPaymentMethodControls() {
@@ -416,6 +492,8 @@ document.getElementById('payment-method').addEventListener('change', () => {
 
 document.getElementById('confirm-sale').addEventListener('click', async (e) => {
     e.preventDefault();
+    const confirmButton = document.getElementById('confirm-sale');
+    confirmButton.disabled = true;
     const rows = Array.from(document.querySelectorAll('#pos-body tr'));
     const items = [];
 
@@ -434,13 +512,18 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
     });
 
     if (!items.length) {
-        alert('Add at least one product.');
+        showMessage('Add at least one product.', 'warning');
+        confirmButton.disabled = false;
         return;
     }
 
     const subtotal = items.reduce((sum, i) => sum + i.line_total, 0);
+    const discountAmount = parseFloat(document.getElementById('discount-amount').value || '0');
+    const discountPercent = parseFloat(document.getElementById('discount-percent').value || '0');
+    const discountApplied = discountPercent > 0 ? (subtotal * discountPercent) / 100 : discountAmount;
+    const taxable = Math.max(subtotal - discountApplied, 0);
     const tax = 0;
-    const total = subtotal + tax;
+    const total = taxable;
     const paymentMethod = document.getElementById('payment-method').value;
     const paidAmount = paymentMethod === 'credit'
         ? 0
@@ -464,6 +547,8 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
         total,
         paid_amount: paidAmount,
         payment_method: paymentMethod,
+        discount: discountApplied,
+        discount_percent: discountPercent > 0 ? discountPercent : 0,
     };
 
     const response = await fetch('/sales/api/create-sale/', {
@@ -477,14 +562,24 @@ document.getElementById('confirm-sale').addEventListener('click', async (e) => {
 
     const result = await response.json();
     if (result.success) {
-        alert(`Sale saved. Receipt: ${result.receipt_number}`);
+        showMessage(`Sale saved. Receipt: ${result.receipt_number}`, 'success');
         window.location.href = `/sales/receipt/${result.sale_number}/`;
     } else {
-        alert(result.error || 'Failed to save sale');
+        showMessage(result.error || 'Failed to save sale', 'danger');
+        confirmButton.disabled = false;
     }
 });
 
 syncPaymentMethodControls();
+recalcGrandTotal();
+
+function showMessage(message, level) {
+    const banner = document.getElementById('pos-message');
+    banner.className = `alert alert-${level}`;
+    banner.textContent = message;
+    banner.classList.remove('d-none');
+    window.setTimeout(() => banner.classList.add('d-none'), 3500);
+}
 
 function getCookie(name) {
     let cookieValue = null;

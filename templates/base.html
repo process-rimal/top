@@ -237,15 +237,11 @@
 </head>
 <body>
     <!-- Navbar -->
-    {% if request.user.is_authenticated %}
     <nav class="navbar navbar-dark navbar-expand-lg mb-4">
         <div class="container-fluid">
             <div class="navbar-brand d-flex flex-column">
                 <a class="text-light" href="/" style="text-decoration: none;">🛍️ Shop Management</a>
                 <small class="fw-normal" style="opacity: 0.85;">Kopila Books &amp; stationery</small>
-                <div style="margin-top: 2px; line-height: 1;">
-                    <a class="btn btn-outline-light btn-sm" href="/admin/" style="padding: 2px 8px;">Admin</a>
-                </div>
             </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -253,16 +249,18 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="/inventory/">Inventory</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/vendors/">Vendors</a></li>
                     <li class="nav-item"><a class="nav-link" href="/sales/">Sales</a></li>
                     <li class="nav-item"><a class="nav-link" href="/reports/">Reports</a></li>
                     <li class="nav-item"><a class="nav-link" href="/customers/">Customers</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/accounts/logout/">Logout</a></li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="/accounts/logout/">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="/accounts/login/">Login</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-    {% endif %}
 
     <!-- Content -->
     <div class="container-fluid">

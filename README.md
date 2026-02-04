@@ -8,7 +8,6 @@ This is a **complete, production-ready Django shop management system** for your 
 
 ✅ **User Authentication** - Secure login portal for admin and staff
 ✅ **Product Management** - Add stationery items and books with barcodes
-✅ **Vendor Database** - Manage suppliers and purchase orders
 ✅ **Inventory System** - Real-time stock tracking with low stock alerts
 ✅ **Customer Database** - Store customers with mobile number (Nepal format)
 ✅ **Credit Management** - Track customer credit and payment history
@@ -89,34 +88,18 @@ django-admin startproject shop_management .
 # Create apps
 python manage.py startapp accounts
 python manage.py startapp inventory
-python manage.py startapp vendors
 python manage.py startapp customers
 python manage.py startapp sales
 python manage.py startapp reports
 ```
 
-### Step 6: Copy Files
-1. Copy all **model files** from `models_complete.py`:
-   - Copy `accounts/models.py` code section to `accounts/models.py` file
-   - Copy `inventory/models.py` code section to `inventory/models.py` file
-   - Copy `vendors/models.py` code section to `vendors/models.py` file
-   - Copy `customers/models.py` code section to `customers/models.py` file
-   - Copy `sales/models.py` code section to `sales/models.py` file
+### Step 6: Verify Project Files
+All code is already included in the repository:
+- Django apps live under `accounts/`, `inventory/`, `customers/`, `sales/`, and `reports/`.
+- Project settings and routing live under `shop_management/`.
+- Templates live under `templates/`.
 
-2. Copy **settings.py** from `settings_configuration.py`:
-   - Replace entire `shop_management/settings.py` with this file's content
-
-3. Copy **URLs** from `urls_and_views.py`:
-   - Update all `urls.py` files in each app
-   - Update main `shop_management/urls.py`
-
-4. Copy **Views and Utilities** from `urls_and_views.py` and `sales_utils_and_views.py`:
-   - Create views.py files in each app with provided code
-   - Create utils.py in sales app
-
-5. Copy **Templates** from `templates_examples.html`:
-   - Create `templates/` folder in project root
-   - Copy HTML templates into appropriate folders
+No manual file copying is required.
 
 ### Step 7: Database Migration
 ```bash
@@ -426,10 +409,6 @@ Congratulations! You now have a professional shop management system.
 **Need more help?** Check the other provided files:
 - `django_setup_guide.md` - Detailed setup
 - `deployment_guide.md` - Production deployment
-- `models_complete.py` - All database models
-- `urls_and_views.py` - URL routing and views
-- `sales_utils_and_views.py` - POS and PDF generation
-- `templates_examples.html` - HTML templates
 
 **Happy selling! 🛍️**
 # learn

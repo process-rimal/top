@@ -94,7 +94,6 @@ mysql -u shop_user -p shop_management < backup.sql
 | http://localhost:8000/inventory/products/ | Product Management |
 | http://localhost:8000/sales/pos/ | POS System |
 | http://localhost:8000/customers/ | Customer Database |
-| http://localhost:8000/vendors/ | Vendor Management |
 | http://localhost:8000/reports/ | Reports Dashboard |
 
 ---
@@ -169,7 +168,6 @@ shop_management/
 │   ├── views.py
 │   ├── urls.py
 │   └── templates/inventory/
-├── vendors/                    ← Suppliers app
 ├── customers/                  ← Customer app
 ├── sales/                      ← POS app
 │   ├── models.py

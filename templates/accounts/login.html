@@ -168,19 +168,13 @@
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="id_username">Username</label>
-                <input type="text" id="id_username" name="username" required autofocus>
-                {% if form.username.errors %}
-                    <small style="color: #dc3545;">{{ form.username.errors.0 }}</small>
-                {% endif %}
+                <label for="id_identifier">Shop Code or Email</label>
+                <input type="text" id="id_identifier" name="identifier" required autofocus>
             </div>
 
             <div class="form-group">
                 <label for="id_password">Password</label>
                 <input type="password" id="id_password" name="password" required>
-                {% if form.password.errors %}
-                    <small style="color: #dc3545;">{{ form.password.errors.0 }}</small>
-                {% endif %}
             </div>
 
             <div class="remember-me">
@@ -191,9 +185,6 @@
             <button type="submit" class="login-btn">Login</button>
         </form>
 
-        <div class="signup-link">
-            <a href="/accounts/" class="btn btn-outline-secondary btn-sm">Dashboard</a>
-        </div>
     </div>
 </div>
 {% endblock %}

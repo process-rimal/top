@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.core.mail import EmailMessage
 from django.views.decorators.http import require_http_methods
 from django.db import transaction
-from django.utils import timezone
 from django.db.models import Q
 from .models import Sale, SaleItem
 from inventory.models import Product, Inventory
@@ -13,6 +12,24 @@ from customers.models import Customer, IrregularCustomer
 from .utils import generate_receipt_pdf, number_to_words
 from decimal import Decimal
 import json
+
+
+def _redirect_no_tenant(request):
+    try:
+        if request.user.profile.role == 'superadmin':
+            messages.error(request, 'Tenant access required for sales pages.')
+            return redirect('superadmin_dashboard')
+    except Exception:
+        pass
+    messages.error(request, 'Tenant access required. Please log in as a vendor.')
+    return redirect('login')
+
+
+def _get_tenant_db_or_redirect(request):
+    tenant_db = getattr(request, 'tenant_db', None)
+    if not tenant_db:
+        return None
+    return tenant_db
 
 def _ensure_credit_transaction(sale, created_by=None):
     if not sale.customer:
@@ -167,16 +184,24 @@ def create_sale_api(request):
 
 @login_required
 def print_receipt(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     amount_in_words = number_to_words(sale.total_amount)
+    change_due = max(sale.paid_amount - sale.total_amount, 0)
     return render(request, 'sales/receipt.html', {
         'sale': sale,
         'amount_in_words': amount_in_words,
+        'change_due': change_due,
     })
 
 @login_required
 def receipt_pdf(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     buffer = generate_receipt_pdf(sale)
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     disposition = 'attachment' if request.GET.get('download') == '1' else 'inline'
@@ -185,7 +210,10 @@ def receipt_pdf(request, sale_number):
 
 @login_required
 def sales_list(request):
-    sales = Sale.objects.select_related('customer').all()
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sales = Sale.objects.using(tenant_db).select_related('customer').all()
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
     query = request.GET.get('q', '').strip()
@@ -308,14 +336,20 @@ def credit_records(request):
 
 @login_required
 def sales_detail(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     return render(request, 'sales/sales_detail.html', {'sale': sale})
 
 
 @login_required
 @transaction.atomic
 def sales_return(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     if request.method == 'POST' and sale.order_status != 'returned':
         for item in sale.items.all():
             inventory, _ = Inventory.objects.get_or_create(
@@ -354,7 +388,10 @@ def sales_return(request, sale_number):
 @login_required
 @transaction.atomic
 def sales_cancel(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     if request.method == 'POST' and sale.order_status != 'cancelled':
         for item in sale.items.all():
             inventory, _ = Inventory.objects.get_or_create(
@@ -392,7 +429,10 @@ def sales_cancel(request, sale_number):
 
 @login_required
 def sales_return_list(request):
-    sales = Sale.objects.filter(order_status='returned')
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sales = Sale.objects.using(tenant_db).filter(order_status='returned')
     query = request.GET.get('q', '').strip()
     filter_by = request.GET.get('filter_by', 'customer')
     sort_by = request.GET.get('sort_by', 'date_desc')
@@ -451,7 +491,10 @@ def sales_return_list(request):
 
 @login_required
 def email_receipt(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     if not sale.customer or not sale.customer.email:
         messages.error(request, 'Customer email is not available for this sale.')
         return redirect('sales_detail', sale_number=sale.sale_number)
@@ -478,7 +521,10 @@ def email_receipt(request, sale_number):
 
 @login_required
 def sales_edit(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     if request.method == 'POST':
         sale.payment_method = request.POST.get('payment_method', sale.payment_method)
         sale.paid_amount = Decimal(str(request.POST.get('paid_amount', sale.paid_amount)))
@@ -493,37 +539,32 @@ def sales_edit(request, sale_number):
 @login_required
 @transaction.atomic
 def sales_delete(request, sale_number):
-    sale = get_object_or_404(Sale, sale_number=sale_number)
+    tenant_db = _get_tenant_db_or_redirect(request)
+    if not tenant_db:
+        return _redirect_no_tenant(request)
+    sale = get_object_or_404(Sale.objects.using(tenant_db), sale_number=sale_number)
     if request.method == 'POST':
-        password = request.POST.get('admin_password', '')
-        if not request.user.is_staff:
-            messages.error(request, 'Admin access is required to delete a sale.')
-        elif not password:
-            messages.error(request, 'Admin password is required to delete a sale.')
-        elif not request.user.check_password(password):
-            messages.error(request, 'Invalid admin password.')
-        else:
-            for item in sale.items.all():
-                inventory, _ = Inventory.objects.get_or_create(
-                    product=item.product,
-                    defaults={'quantity_in_stock': 0}
-                )
-                inventory.quantity_in_stock += item.quantity
-                inventory.save()
+        for item in sale.items.all():
+            inventory, _ = Inventory.objects.get_or_create(
+                product=item.product,
+                defaults={'quantity_in_stock': 0}
+            )
+            inventory.quantity_in_stock += item.quantity
+            inventory.save()
 
-            if sale.customer and sale.payment_method == 'credit':
-                from customers.models import CreditTransaction
-                sale.customer.current_credit -= sale.total_amount
-                sale.customer.save()
-                CreditTransaction.objects.create(
-                    customer=sale.customer,
-                    transaction_type='refund',
-                    amount=sale.total_amount,
-                    balance_after=sale.customer.current_credit,
-                    related_sale=sale,
-                )
+        if sale.customer and sale.payment_method == 'credit':
+            from customers.models import CreditTransaction
+            sale.customer.current_credit -= sale.total_amount
+            sale.customer.save()
+            CreditTransaction.objects.create(
+                customer=sale.customer,
+                transaction_type='refund',
+                amount=sale.total_amount,
+                balance_after=sale.customer.current_credit,
+                related_sale=sale,
+            )
 
-            sale.delete()
-            messages.success(request, 'Sale deleted successfully.')
-            return redirect('sales_list')
+        sale.delete()
+        messages.success(request, 'Sale deleted successfully.')
+        return redirect('sales_list')
     return render(request, 'sales/sales_delete.html', {'sale': sale})

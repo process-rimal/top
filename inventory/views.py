@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from .models import Product, Category, Inventory
 import barcode
 from barcode.writer import ImageWriter
@@ -120,7 +120,7 @@ def product_add(request):
                 category=category,
                 cost_price=cost_price,
                 selling_price=selling_price,
-                barcode=_generate_unique_barcode(barcode_value),
+                barcode=_generate_unique_barcode(barcode_value or sku),
                 wholesale_price=wholesale_price,
                 unit=unit,
                 reorder_level=reorder_level,
@@ -161,6 +161,8 @@ def product_edit(request, pk):
         product.cost_price = request.POST.get('cost_price')
         product.selling_price = request.POST.get('selling_price')
         new_barcode = (request.POST.get('barcode') or '').strip() or None
+        if not new_barcode:
+            new_barcode = product.barcode or product.sku
         if new_barcode == product.barcode:
             product.barcode = new_barcode
         else:
@@ -187,17 +189,9 @@ def product_edit(request, pk):
 def product_delete(request, pk):
     product = get_object_or_404(Product, id=pk)
     if request.method == 'POST':
-        password = request.POST.get('admin_password', '')
-        if not request.user.is_staff:
-            messages.error(request, 'Admin access is required to delete a product.')
-        elif not password:
-            messages.error(request, 'Admin password is required to delete a product.')
-        elif not request.user.check_password(password):
-            messages.error(request, 'Invalid admin password.')
-        else:
-            product.delete()
-            messages.success(request, 'Product deleted successfully.')
-            return redirect('product_list')
+        product.delete()
+        messages.success(request, 'Product deleted successfully.')
+        return redirect('product_list')
     
     context = {'product': product}
     return render(request, 'inventory/product_delete.html', context)
@@ -234,17 +228,9 @@ def category_edit(request, category_id):
 def category_delete(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     if request.method == 'POST':
-        password = request.POST.get('admin_password', '')
-        if not request.user.is_staff:
-            messages.error(request, 'Admin access is required to delete a category.')
-        elif not password:
-            messages.error(request, 'Admin password is required to delete a category.')
-        elif not request.user.check_password(password):
-            messages.error(request, 'Invalid admin password.')
-        else:
-            category.delete()
-            messages.success(request, 'Category deleted successfully.')
-            return redirect('category_list')
+        category.delete()
+        messages.success(request, 'Category deleted successfully.')
+        return redirect('category_list')
     
     context = {'category': category}
     return render(request, 'inventory/category_delete.html', context)

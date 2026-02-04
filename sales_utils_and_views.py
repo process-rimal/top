@@ -160,7 +160,6 @@ def process_payment(customer, amount):
 # sales/views.py - POS & Billing Views
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.db import transaction
@@ -171,7 +170,6 @@ from customers.models import Customer
 from .utils import generate_receipt_pdf
 import json
 
-@login_required
 def pos_view(request):
     """Main POS Interface"""
     context = {
@@ -179,7 +177,6 @@ def pos_view(request):
     }
     return render(request, 'sales/pos.html', context)
 
-@login_required
 @require_http_methods(["GET"])
 def search_product_api(request):
     """API endpoint to search products by name or barcode"""
@@ -208,7 +205,6 @@ def search_product_api(request):
     
     return JsonResponse({'products': results})
 
-@login_required
 @require_http_methods(["GET"])
 def get_customer_api(request):
     """API endpoint to get customer by mobile number"""
@@ -227,7 +223,6 @@ def get_customer_api(request):
     except Customer.DoesNotExist:
         return JsonResponse({'found': False})
 
-@login_required
 @require_http_methods(["POST"])
 @transaction.atomic
 def create_sale_api(request):
@@ -299,14 +294,12 @@ def create_sale_api(request):
             'error': str(e)
         }, status=400)
 
-@login_required
 def print_receipt(request, sale_number):
     """Display receipt in printable format"""
     sale = get_object_or_404(Sale, sale_number=sale_number)
     context = {'sale': sale}
     return render(request, 'sales/receipt.html', context)
 
-@login_required
 def receipt_pdf(request, sale_number):
     """Generate and download receipt as PDF"""
     sale = get_object_or_404(Sale, sale_number=sale_number)
@@ -317,7 +310,6 @@ def receipt_pdf(request, sale_number):
     
     return response
 
-@login_required
 def sales_list(request):
     """View all sales transactions"""
     sales = Sale.objects.all().order_by('-sale_date')
@@ -334,7 +326,6 @@ def sales_list(request):
     context = {'sales': sales}
     return render(request, 'sales/sales_list.html', context)
 
-@login_required
 def sales_detail(request, sale_number):
     """View detailed sale information"""
     sale = get_object_or_404(Sale, sale_number=sale_number)

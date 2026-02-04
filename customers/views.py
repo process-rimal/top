@@ -130,17 +130,9 @@ def customer_edit(request, phone):
 def customer_delete(request, phone):
     customer = get_object_or_404(Customer, phone_number=phone)
     if request.method == 'POST':
-        password = request.POST.get('admin_password', '')
-        if not request.user.is_staff:
-            messages.error(request, 'Admin access is required to delete a customer.')
-        elif not password:
-            messages.error(request, 'Admin password is required to delete a customer.')
-        elif not request.user.check_password(password):
-            messages.error(request, 'Invalid admin password.')
-        else:
-            customer.delete()
-            messages.success(request, 'Customer deleted successfully.')
-            return redirect('customer_list')
+        customer.delete()
+        messages.success(request, 'Customer deleted successfully.')
+        return redirect('customer_list')
     return render(request, 'customers/customer_delete.html', {'customer': customer})
 
 @login_required

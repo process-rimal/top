@@ -1,12 +1,11 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.db.models import Sum, Count, Avg, F, Q
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, F, Q
 from django.utils import timezone
 from sales.models import Sale
 from inventory.models import Product, Inventory
 from customers.models import Customer
-from vendors.models import Vendor
 
 @login_required
 def reports_dashboard(request):
@@ -105,11 +104,6 @@ def inventory_report(request):
 def customer_report(request):
     customers = Customer.objects.all()
     return render(request, 'reports/customer_report.html', {'customers': customers})
-
-@login_required
-def vendor_report(request):
-    vendors = Vendor.objects.all()
-    return render(request, 'reports/vendor_report.html', {'vendors': vendors})
 
 @login_required
 def export_sales(request):

@@ -44,34 +44,24 @@ GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 
-# 7. Copy model files to each app
-# Copy contents of models_complete.py to:
-# - accounts/models.py
-# - inventory/models.py
-# - vendors/models.py
-# - customers/models.py
-# - sales/models.py
+# 7. Confirm source code is present
+# All apps, settings, URLs, and templates are already included in this repository.
+# No manual copy steps are required.
 
-# 8. Copy URLs and Views
-# Copy contents of urls_and_views.py
-
-# 9. Update settings.py
-# Copy contents of settings_configuration.py
-
-# 10. Run migrations
+# 8. Run migrations
 python manage.py makemigrations
 python manage.py migrate
 
-# 11. Create superuser
+# 9. Create superuser
 python manage.py createsuperuser
 # Username: admin
 # Email: admin@shop.com
 # Password: your_password_123
 
-# 12. Collect static files (for production)
+# 10. Collect static files (for production)
 python manage.py collectstatic
 
-# 13. Run development server
+# 11. Run development server
 python manage.py runserver
 
 # Access at: http://localhost:8000
