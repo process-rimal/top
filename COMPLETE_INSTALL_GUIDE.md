@@ -262,7 +262,7 @@ mysql -u root -p
 
 # Copy-paste these commands:
 CREATE DATABASE shop_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'shop_user'@'localhost' IDENTIFIED BY 'shop_password_123';
+CREATE USER 'shop_user'@'localhost' IDENTIFIED BY '<set-strong-password>';
 GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -284,7 +284,7 @@ EXIT;
 11. Click "Apply"
 12. In query editor, paste:
 ```sql
-CREATE USER 'shop_user'@'localhost' IDENTIFIED BY 'shop_password_123';
+CREATE USER 'shop_user'@'localhost' IDENTIFIED BY '<set-strong-password>';
 GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
@@ -300,7 +300,7 @@ mysql -u root -p
 
 # Copy-paste these commands:
 CREATE DATABASE shop_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'shop_user'@'localhost' IDENTIFIED BY 'shop_password_123';
+CREATE USER 'shop_user'@'localhost' IDENTIFIED BY '<set-strong-password>';
 GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -309,7 +309,7 @@ EXIT;
 ✅ **Database created!** You now have:
 - Database name: `shop_management`
 - Username: `shop_user`
-- Password: `shop_password_123`
+- Password: the one you set above
 
 ---
 
@@ -368,8 +368,8 @@ python manage.py createsuperuser
 # You'll be asked:
 # Username: admin
 # Email address: admin@shop.com
-# Password: your_password_123
-# Password (again): your_password_123
+# Password: <set-strong-password>
+# Password (again): <set-strong-password>
 # Superuser created successfully.
 ```
 

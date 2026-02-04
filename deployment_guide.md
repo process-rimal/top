@@ -39,7 +39,7 @@ python manage.py startapp reports
 mysql -u root -p
 # Run these commands in MySQL:
 CREATE DATABASE shop_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'shop_user'@'localhost' IDENTIFIED BY 'shop_password_123';
+CREATE USER 'shop_user'@'localhost' IDENTIFIED BY '<set-strong-password>';
 GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -56,7 +56,7 @@ python manage.py migrate
 python manage.py createsuperuser
 # Username: admin
 # Email: admin@shop.com
-# Password: your_password_123
+# Password: <set-strong-password>
 
 # 10. Collect static files (for production)
 python manage.py collectstatic

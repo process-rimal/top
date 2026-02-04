@@ -172,7 +172,7 @@ mysql -u root -p
 
 # Then paste these commands in MySQL:
 CREATE DATABASE shop_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'shop_user'@'localhost' IDENTIFIED BY 'shop_password_123';
+CREATE USER 'shop_user'@'localhost' IDENTIFIED BY '<set-strong-password>';
 GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -308,7 +308,7 @@ After setup, you'll have:
 **MySQL Database:**
 - Database Name: shop_management
 - Username: shop_user
-- Password: shop_password_123
+- Password: the one you set above
 - Host: localhost
 - Port: 3306
 

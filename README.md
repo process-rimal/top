@@ -74,7 +74,7 @@ mysql -u root -p
 
 # Copy and paste these commands:
 CREATE DATABASE shop_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'shop_user'@'localhost' IDENTIFIED BY 'shop_password_123';
+CREATE USER 'shop_user'@'localhost' IDENTIFIED BY '<set-strong-password>';
 GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -112,7 +112,7 @@ python manage.py createsuperuser
 # Follow prompts:
 # Username: admin
 # Email: admin@shop.com
-# Password: your_password_123
+# Password: <set-strong-password>
 
 # Prepare static files
 python manage.py collectstatic --noinput
@@ -136,7 +136,7 @@ python manage.py runserver
 ### Login
 1. Go to http://localhost:8000/admin
 2. Username: `admin`
-3. Password: Your password from createsuperuser
+3. Password: The password you set during createsuperuser
 
 ### Add Products
 1. Go to **Inventory → Products**

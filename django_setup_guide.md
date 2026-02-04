@@ -70,7 +70,7 @@ mysql -u root -p
 
 # Create Database
 CREATE DATABASE shop_management;
-CREATE USER 'shop_user'@'localhost' IDENTIFIED BY 'shop_password_123';
+CREATE USER 'shop_user'@'localhost' IDENTIFIED BY '<set-strong-password>';
 GRANT ALL PRIVILEGES ON shop_management.* TO 'shop_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
@@ -85,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'shop_management',
         'USER': 'shop_user',
-        'PASSWORD': 'shop_password_123',
+        'PASSWORD': '<set-strong-password>',
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -103,7 +103,7 @@ python manage.py migrate
 python manage.py createsuperuser
 # Username: admin
 # Email: admin@shop.com
-# Password: your_password_123
+# Password: <set-strong-password>
 
 # Load Sample Data (Optional)
 python manage.py loaddata sample_data.json

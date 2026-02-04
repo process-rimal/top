@@ -75,7 +75,7 @@ DATABASES = {
         'ENGINE': 'mysql.connector.django',
         'NAME': 'shop_management',
         'USER': 'shop_user',
-        'PASSWORD': 'shop_password_123',  # ⚠️ EXPOSED
+        'PASSWORD': '<redacted>',  # ⚠️ EXPOSED
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }

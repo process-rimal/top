@@ -74,13 +74,13 @@ deactivate
 ### Backup
 ```bash
 mysqldump -u shop_user -p shop_management > backup.sql
-# Enter password: shop_password_123
+# Enter the password you set for MySQL
 ```
 
 ### Restore
 ```bash
 mysql -u shop_user -p shop_management < backup.sql
-# Enter password: shop_password_123
+# Enter the password you set for MySQL
 ```
 
 ---
@@ -110,7 +110,7 @@ mysql -u shop_user -p shop_management < backup.sql
 
 - **Database:** shop_management
 - **User:** shop_user
-- **Password:** shop_password_123
+- **Password:** the one you set during MySQL setup
 - **Host:** localhost
 - **Port:** 3306
 
@@ -296,7 +296,7 @@ python manage.py loaddata backup.json
 mysql -u root -p
 
 # Or with password
-mysql -u root -p shop_password_123
+mysql -u root -p
 
 # In MySQL prompt:
 SHOW DATABASES;                  # List all databases

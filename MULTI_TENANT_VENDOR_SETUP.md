@@ -122,7 +122,7 @@ python manage.py migrate
 python manage.py create_superadmin
 
 # Option B: Non-interactive
-python manage.py create_superadmin --email=superadmin@example.com --password=securepass123
+python manage.py create_superadmin --email=superadmin@example.com --password=<set-strong-password>
 ```
 
 ### 3. Login

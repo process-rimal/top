@@ -146,7 +146,7 @@ python manage.py migrate
 ### 2. Create Superadmin
 ```bash
 python manage.py create_superadmin
-# Or: --email=admin@example.com --password=pass123
+# Or: --email=admin@example.com --password=<set-strong-password>
 ```
 
 ### 3. Login & Create Vendor

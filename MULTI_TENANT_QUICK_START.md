@@ -10,7 +10,7 @@ python manage.py migrate
 ```bash
 python manage.py create_superadmin
 # Interactive prompts for email and password
-# Or use: python manage.py create_superadmin --email=admin@example.com --password=pass123
+# Or use: python manage.py create_superadmin --email=admin@example.com --password=<set-strong-password>
 ```
 
 ## Step 3: Start Server
